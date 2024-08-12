@@ -113,7 +113,7 @@
                   </v-row>
                 </v-container>
                 <div class="button-container">
-                  <v-btn color="black-darken-1" variant="text" >Cancelar</v-btn>
+                  <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
                   <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check">Salvar</v-btn>
                 </div>
               </v-form>
@@ -134,13 +134,19 @@
   import axios from 'axios';
   import { useField, useForm } from 'vee-validate'
   import validator from 'validator';
-
+  
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
+  
   const loading = ref(false);
   const loadingComponent = ref(false);
+  const emit = defineEmits(['closed']);
 
+  const emitValue = (value) => {
+    emit('closed', value);
+  };
+  
   const { handleSubmit } = useForm({
     validationSchema: {
       name (value) {
@@ -227,8 +233,45 @@
     loading.value = true;
 
     setTimeout(async () => {
+      try {
+        const userData = JSON.stringify({
+          name: values.name,
+          email: values.email,
+          roleId: roles.value.find(role => role.name === values.role).id,
+          departmentId: departments.value.find(department => department.name === values.department).id,
+        });
+
+        await axios.put(`http://localhost:3001/api/user/${props.userId}`, userData, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 0)
+        {
+          for (let i = 0; i < selectedSystems.value.value.length; i++) {
+            let newPermission = {
+              userId: response.data.id,
+              systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
+            }
+            await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
+            .catch(error => {
+              console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
+            });
+          }
+        }
+
+        console.log(userData);
+        toastr.success('Usuário salvo com sucesso.');
+        emitValue(true);  
+      } catch (error) {
+        loading.value = false;
+        toastr.error('Erro ao salvar usuário.');
+        console.error('Error saving user:', error);
+      }
+
       loading.value = false;
-      toastr.error('Erro ao salvar usuário.');
       }, 1000);
     });
     
@@ -273,7 +316,6 @@
 
         loadingComponent.value = false;
       } catch (error) {
-          console.log('Errors to fetch data', error);
           loadingComponent.value = false;
       }
     }, 300);

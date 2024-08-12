@@ -12,13 +12,13 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String       @unique
   name         String
-  departement  Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  department  Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   role         Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   departmentId Int?
   roleId       Int?
   permissions   Permission[]
   Admin        Admin[]
-  sid          Sid[]
+  sids          Sids[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   deletedAt    DateTime?
@@ -59,7 +59,6 @@ model Permission {
   System   System  @relation(fields: [systemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   userId   Int
   systemId Int
-  allow    Boolean @default(false)
 
   @@unique([userId, systemId])
 }
@@ -67,8 +66,15 @@ model Permission {
 model Sid {
   id        Int       @id @default(autoincrement())
   name      String    @unique
+  sids     Sids[]  
+}
+
+model Sids {
+  id        Int       @id @default(autoincrement())
+  sid       Sid?      @relation(fields: [sidId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  sidId     Int?
   user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   userId    Int?
 
-  @@unique([name, userId])
+  @@unique([sidId, userId])
 }

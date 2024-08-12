@@ -18,6 +18,11 @@ export const create = async (req: Request, res: Response) => {
                 email: validatedData.data.email,
                 roleId: validatedData.data.roleId,
                 departmentId: validatedData.data.departmentId,
+                sids: req.body.sid ? {
+                    create: req.body.sid.map((sidValue: number) => ({
+                        value: sidValue
+                    }))
+                } : undefined,
             }
         });
         res.status(200).json(user);
@@ -94,8 +99,18 @@ export const findOne = async (req: Request, res: Response) => {
                 deletedAt: null
              },
              include: {
-                 permissions: true
-             }
+                permissions: true,
+                role: {
+                    select: {
+                        name: true,
+                    },
+                },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+            }
         });
         res.status(200).json(user);
     } catch (e) {

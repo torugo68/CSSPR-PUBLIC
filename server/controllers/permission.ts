@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ZodError } from "zod";
 import prisma from "../config/db";
 import { permissionSchema } from "../middleware/validator";
-
+//
 export const create = async (req: Request, res: Response) => {
     try {
         const validatedData = permissionSchema.safeParse(req.body);
@@ -15,7 +15,6 @@ export const create = async (req: Request, res: Response) => {
             data: {
                 userId:  validatedData.data.userId,
                 systemId:  validatedData.data.systemId,
-                allow: validatedData.data.allow,
             }
         });
         res.status(200).json(permission);
@@ -27,12 +26,12 @@ export const create = async (req: Request, res: Response) => {
             res.status(500).json({message: "Error on creating a new permission."});
         }
     }
-}
+}//
 
 export const remove = async (req: Request, res: Response) => {
     try {
-        await prisma.permission.delete({
-            where: { id: Number(req.params.id) },
+        await prisma.permission.deleteMany({
+            where: { userId: Number(req.params.userId) },
         });
     } catch (e) {
         res.status(500).json({ message: "Error on delete permission." });

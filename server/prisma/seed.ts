@@ -74,6 +74,13 @@ async function main() {
     { name: 'Padrão'}
   ];
 
+  const sid = [
+    { name: 'TCC' },
+    { name: 'TUR' },
+    { name: 'Wi-Fi' },
+    { name: 'VPN' },
+  ]
+
   const systems = [
     { name: 'Copel' },
     { name: 'Sipro' },
@@ -174,6 +181,12 @@ async function main() {
 
   for (const item of departments) {
     await prisma.department.create({
+      data: item,
+    });
+  }
+
+  for (const item of sid) {
+    await prisma.sid.create({
       data: item,
     });
   }

@@ -100,13 +100,20 @@
   </template>
   
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import axios from 'axios';
   import { useField, useForm } from 'vee-validate'
+  import { ref, onMounted } from 'vue';
   import validator from 'validator';
+  import axios from 'axios';
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
+import { ca } from 'vuetify/locale';
+
+  const emit = defineEmits(['closed']);
+
+  const emitValue = (value) => {
+    emit('closed', value);
+  };
   
   const loading = ref(false);
 
@@ -183,13 +190,11 @@
       setTimeout(async () => {
           try {
             const userData = JSON.stringify({
-            name: values.name,
-            email: values.email,
-            roleId: roles.value.find(role => role.name === values.role).id,
-            departmentId: departments.value.find(department => department.name === values.department).id
-          });
-          
-            console.log(userData)
+              name: values.name,
+              email: values.email,
+              roleId: roles.value.find(role => role.name === values.role).id,
+              departmentId: departments.value.find(department => department.name === values.department).id
+            });
 
             await axios.post('http://localhost:3001/api/user', userData, {
               withCredentials: true,
@@ -198,25 +203,41 @@
               }
             })
             .then(async response => {
-              console.log(response)
-
               if (response.status === 200) {
-                
-                for (let i = 0; i < selectedSystems.value.value.length; i++) {
-                  let newPermission = {
-                    userId: response.data.id,
-                    systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
-                    allow: true
+                if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 0)
+                {
+                  await axios.delete(`http://localhost:3001/api/permission/${response.data.id}`, { withCredentials: true });
+                  for (let i = 0; i < selectedSystems.value.value.length; i++) {
+                    let newPermission = {
+                      userId: response.data.id,
+                      systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
+                    }
+                    await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
+                    .catch(error => {
+                      console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
+                    });
                   }
-
-                  await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
-                  .catch(error => {
-                    console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
-                  });
                 }
-                
+
+                if (tcc.value) {
+                  try {
+                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 1 }, { withCredentials: true })
+                  } catch (error) {
+                    toastr.error('Não foi possivel adicionar o TCC', error);
+                  }
+                }
+
+                if (tur.value) {
+                  try {
+                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 2 }, { withCredentials: true })
+                  } catch (error) {
+                    toastr.error('Não foi possivel adicionar o TUR', error);
+                  }
+                }
+
                 loading.value = false;
                 toastr.success('Usuário criado com sucesso');
+                emitValue(response.data);
               } else {
                 loading.value = false;
                 toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
@@ -225,7 +246,7 @@
             })
             .catch(error => {
               loading.value = false;
-              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
+              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', error);
             });
           } catch (e) {
             loading.value = false;
@@ -264,7 +285,7 @@
           console.error('Error fetching departments:', error);
         });
     } catch (error) {
-        console.log('Errors to fetch data', error);
+      console.log('Errors to fetch data', error);
     }
   });
 </script>

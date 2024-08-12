@@ -5,7 +5,7 @@
       :items="usersData"
       :sort-by="[{ key: 'email', order: 'asc' }]"
       v-if="!loading"
-      style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: auto; width: max-content; min-width: 650px;"
+      style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
     >
       <template v-slot:top>
         <v-toolbar
@@ -43,7 +43,7 @@
                 ></v-text-field>
               </v-card-text>
             </template>
-            <create-user></create-user>
+            <create-user @closed="handleNewUser"></create-user>
           </v-dialog>
           <v-dialog v-model="dialogDelete" max-width="30%">
             <v-card>
@@ -57,7 +57,7 @@
             </v-card>
           </v-dialog>
           <v-dialog v-model="dialogEdit">
-            <edit-user :userId="id"></edit-user>
+            <edit-user :userId="id" @closed="closeEdit"></edit-user>
           </v-dialog>
         </v-toolbar>
       </template>
@@ -131,15 +131,27 @@
   
   watch(dialog, (val) => {
     if (!val) close();
-    // implement auto update table
-    if (!val) {
-      console.log("CLOSED")
-    }
   });
   
   watch(dialogDelete, (val) => {
     if (!val) closeDelete();
   });
+
+  const closeEdit = () => {
+    dialogEdit.value = false;
+  };
+
+  const handleNewUser = (value) => {
+    console.log(value)
+    usersData.value.push({
+      id: value.id,
+      name: value.name,
+      email: value.email,
+      roleId: roles.value.find(role => role.id === value.roleId).name,
+      departmentId: departments.value.find(department => department.id === value.departmentId).name,
+    });
+    dialog.value = false;
+  };
   
   onMounted(() => {
     if (!isMounted.value) {

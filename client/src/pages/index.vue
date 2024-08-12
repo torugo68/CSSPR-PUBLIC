@@ -2,10 +2,10 @@
   <div id="app">
     <nav-bar @update-tab="handleTabUpdate"></nav-bar>
     <v-container fluid class="fill-height">
-      <create-user v-if="tab === 1" />
-      <create-role v-else-if="tab === 2"></create-role>
-      <create-department v-else-if="tab === 3" />
-      <data-table-user v-else />
+      <data-table-user v-if="tab === 1" />
+      <create-user v-else-if="tab === 2" />
+      <create-role v-else-if="tab === 3" />
+      <create-department v-else />
     </v-container>
     <footer>
       <FooterBar />
