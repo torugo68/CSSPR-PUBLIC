@@ -40,3 +40,9 @@ export const permissionSchema = z.object({
     systemId: z.number(),
     allow: z.boolean(),
 });
+
+export const sidSchema = z.object({
+    userId: z.number(),
+    sidId: z.number(),
+    value: z.string().regex(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/),
+});

@@ -12,13 +12,13 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String       @unique
   name         String
-  department  Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  department    Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   role         Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   departmentId Int?
   roleId       Int?
-  permissions   Permission[]
+  permissions  Permission[]
+  sids         UserSids[]
   Admin        Admin[]
-  sids          Sids[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   deletedAt    DateTime?
@@ -66,15 +66,16 @@ model Permission {
 model Sid {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  sids     Sids[]  
+  sids     UserSids[]  
 }
 
-model Sids {
+model UserSids {
   id        Int       @id @default(autoincrement())
   sid       Sid?      @relation(fields: [sidId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   sidId     Int?
   user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   userId    Int?
+  value     String
 
   @@unique([sidId, userId])
 }

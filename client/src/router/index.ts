@@ -1,9 +1,6 @@
-// Composables
 import { createRouter, createWebHistory } from 'vue-router/auto';
 import { routes } from 'vue-router/auto-routes';
 import NotFound from '../pages/error/404/index.vue';
-// todo
-import mitt from 'mitt';
 
 routes.push({
   path: '/:pathMatch(.*)*',
@@ -18,23 +15,14 @@ const router = createRouter({
 
 let isAuthenticated = false;
 
-const checkAuthStatus = async () => {
+router.beforeEach(async (to, from, next) => {
   try {
     const response = await fetch('http://localhost:3001/api/auth', {
       method: 'GET',
       credentials: 'include'
     });
     isAuthenticated = response.ok;
-  } catch (error) {
-    console.error('Error checking authentication status:', error);
-  }
-};
 
-checkAuthStatus();
-setInterval(checkAuthStatus, 10000);
-
-router.beforeEach(async (to, from, next) => {
-  try {
     if (to.path === '/error/internal') {
       next();
       return;

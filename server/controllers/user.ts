@@ -110,6 +110,17 @@ export const findOne = async (req: Request, res: Response) => {
                         name: true,
                     },
                 },
+                sids: {
+                    select: {
+                        sidId: true,
+                        value: true,
+                        sid: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                },
             }
         });
         res.status(200).json(user);

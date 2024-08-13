@@ -4,7 +4,7 @@ import { isAuthenticated } from "../../middleware/passport";
 import auth from './auth';
 import user from './user';
 import sid from "./sid";
-import sids from "./sids";
+import sids from "./user-sids";
 import role from './role';
 import department from "./department";
 import system from "./system";
@@ -16,7 +16,7 @@ router.use('/user', isAuthenticated, user);
 router.use('/role', isAuthenticated, role);
 router.use('/department', isAuthenticated, department);
 router.use('/sid', isAuthenticated, sid);
-router.use('/sids', isAuthenticated, sids);
+router.use('/user-sids', isAuthenticated, sids);
 router.use('/system', isAuthenticated, system);
 router.use('/permission', isAuthenticated, permission);
 

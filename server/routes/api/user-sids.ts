@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { create, remove, findOne } from "../../controllers/sids";
+import { create, remove, findOne } from "../../controllers/user-sids";
 
 const router = Router();
 

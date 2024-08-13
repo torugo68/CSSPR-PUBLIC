@@ -19,7 +19,6 @@
   const tab = ref(1);
 
   function handleTabUpdate(newTab) {
-    console.log(newTab);
     tab.value = newTab;
   }
 </script>

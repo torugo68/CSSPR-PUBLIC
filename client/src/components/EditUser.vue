@@ -65,57 +65,48 @@
                   :error-messages="selectedSystems.errorMessage.value"
                   multiple
                 >
-                  <template v-slot:selection="{ item, index }">
-                    <v-chip v-if="index < 3">
-                        <span>{{ item.title }}</span>
-                    </v-chip>
-                    <span
-                        v-if="index === 3"
-                        class="text-grey text-caption align-self-center"
-                    >
-                        (+{{ selectedSystems.value.value.length - 3 }} outros)
-                    </span>
-                  </template>
+                <label></label>
+                <template v-slot:selection="{ item, index }">
+                  <v-chip v-if="index < 3">
+                    <span>{{ item.title }}</span>
+                  </v-chip>
+                  <span v-if="index === 3" class="text-grey text-caption align-self-center">
+                    (+{{ selectedSystems.value.value.length - 3 }} outros)
+                  </span>
+                </template>
+                <template v-slot:no-data>
+                  <span class="text-grey text-caption align-self-center">
+                    Nenhum sistema selecionado
+                  </span>
+                </template>
                 </v-select>
-                <v-container fluid>
-                  <v-row justify="start">
-                    <v-col cols="auto">
-                      <v-checkbox
-                        v-model="tcc"
-                        :label="`TCC?`"
-                      ></v-checkbox>
-                    </v-col>
-                    <v-col cols="auto">
-                      <v-checkbox
-                        v-model="tur"
-                        :label="`TUR?`"
-                      ></v-checkbox>
-                    </v-col>
-                    <v-col>
-                      <v-text-field
-                        v-if="tcc || tur"
-                        v-model="sid.value.value"
-                        label="SID termos"
-                        clearable
-                        counter="12"
-                        :error-messages="sid.errorMessage.value"
-                      ></v-text-field>
-                      <v-text-field
-                        v-else
-                        v-model="sid.value.value"
-                        label="SID termos"
-                        clearable
-                        counter="12"
-                        :error-messages="sid.errorMessage.value"
-                        disabled
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-                <div class="button-container">
-                  <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
-                  <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check">Salvar</v-btn>
+                <div v-for="item, index in sids" :key="item">
+                  <div style="display: flex; align-items: center;">
+                    <div v-if="item.activated" style="flex: 1;">
+                      <div style="display: flex; align-items: center;"> 
+                        <v-text-field
+                        v-model="item.value"
+                          :label="item.sid.name"
+                          :error-messages="item.errorMessage"
+                          clearable
+                          variant="underlined"
+                          class="mb-3 custom-text-field"
+                          @input="validateSid(item.value, index)"
+                          ></v-text-field>
+                        <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                      </div>
+                    </div>
+                    <div v-else style="display: flex; align-items: center; flex: 1;" class="mb-3">
+                      <p style="margin-right: 3px; font-weight: bold; font-size: 1.05em;" class="mb-2 ml-1">SID {{ item.sid.name }}:</p>
+                      <a style="font-size: 1.05em" class="ml-2 mb-2" :href="baseUrl" @click.prevent="copyToClipboard(item.value)">{{ item.value }}</a>
+                      <v-icon small @click="toggleActivation(index)" class="ml-1 mb-2">mdi-pencil</v-icon>
+                    </div>
                 </div>
+              </div>
+              <div class="button-container">
+                <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
+                <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check" :disabled="Editing()">Salvar</v-btn>
+              </div>
               </v-form>
             </div>
             <div class="text-center" v-else>
@@ -137,6 +128,7 @@
   
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
+import { errorMessages } from 'vue/compiler-sfc';
   
   
   const loading = ref(false);
@@ -177,37 +169,16 @@
       SelectedSystems (value) {
         return true
       },
-
-      sid (value) {
-        if (value) {
-          if (value.length > 0) {
-            sid.value.value =  sid.value.value.replace(/\D/g, '');
-            if (!validator.isLength(value, { max: 9 })) {
-              sid.value.value = sid.value.value.slice(0, 9);
-            }
-            
-            if (value.length > 2) sid.value.value = sid.value.value.slice(0, 2) + '.' + sid.value.value.slice(2);
-            if (value.length > 6) sid.value.value = sid.value.value.slice(0, 6) + '.' + sid.value.value.slice(6);
-            if (value.length > 10) sid.value.value = sid.value.value.slice(0, 10) + '-' + sid.value.value.slice(10, 11);
-            
-            sid.value.value = sid.value.value.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
-
-            if (!/^\d{2}\.\d{3}\.\d{3}-\d{1}$/.test(value)) return 'Formato inválido. Ex: 00.000.000-0';
-          }
-        }
-        return true
-      }
     },
   })
 
   const name = useField('name');
   const email = useField('email');
   const role = useField('role');
-  const sid = useField('sid');
   const department = useField('department');
   const selectedSystems = useField('SelectedSystems');
-  const tur = ref(false);
-  const tcc = ref(false);
+  const sids = ref([])
+  const baseUrl = 'https://www.eprotocolo.pr.gov.br/spiweb/consultarProtocoloDigital.do?action=pesquisar';
   
   // api
   const departments = ref([]);
@@ -227,7 +198,6 @@
   function toggleEmailEdit() {
     editEmail.value = !editEmail.value
   }
-  
 
   const submit = handleSubmit(values => {
     loading.value = true;
@@ -312,6 +282,11 @@
             role.value.value = roles.value.find(role => role.id === response.data.roleId).name
             department.value.value = departments.value.find(department => department.id === response.data.departmentId).name
             selectedSystems.value.value = response.data.permissions.map(permission => systems.value.find(system => system.id === permission.systemId).name)
+            sids.value = response.data.sids.map(item => ({
+              ...item,
+              activated: false,
+              errorMessage: ''
+            }))
         });
 
         loadingComponent.value = false;
@@ -340,7 +315,59 @@
     }
   }));
 
-</script>
+    function copyToClipboard(value) {
+      const url = baseUrl;
+      navigator.clipboard.writeText(value).then(() => {
+        console.log('URL copied to clipboard');
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+      window.open(url, '_blank');
+    }
+
+    function validateSid(value, index) {
+      if (value && value.length > 0) {
+        value = value.replace(/\D/g, ''); 
+        if (value.length > 9) {
+          value = value.slice(0, 9); 
+        }
+
+        if (value.length > 2) value = value.slice(0, 2) + '.' + value.slice(2);
+        if (value.length > 6) value = value.slice(0, 6) + '.' + value.slice(6);
+        if (value.length > 10) value = value.slice(0, 10) + '-' + value.slice(10, 11);
+        
+        value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
+        
+        if (!/^\d{2}\.\d{3}\.\d{3}-\d{1}$/.test(value)) {
+          sids.value[index].errorMessage = 'Formato inválido. Ex: 00.000.000-0';
+        } else {
+          sids.value[index].errorMessage = '';
+        }
+        
+        sids.value[index].value = value; 
+      } else if (value.length === 0) {
+        sids.value[index].errorMessage = 'Campo obrigatório.';
+      } else {
+        sids.value[index].errorMessage = '';
+      }
+      console.log(value, sids.value[index].value, sids.value[index].activated, sids.value[index].errorMessage);
+    }
+
+    function toggleActivation(index) {
+      sids.value[index].activated = !sids.value[index].activated;
+      console.log(sids.value[index].activated)
+    }
+
+    function Editing() {
+      if (editName.value || editEmail.value || sids.value.some(item => item.activated)) {
+        console.log(true);
+        return true;
+      } else {
+        console.log(false);
+        return false;
+      }
+    }
+  </script>
 
 <style scoped>
 .custom-title {
