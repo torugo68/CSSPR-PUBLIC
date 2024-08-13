@@ -56,7 +56,7 @@ $ npm install
 Generate database with prisma
 
 ```sh
-$ npx prima db push
+$ npx prisma db push
 ```
 
 Seed database with sample data: 

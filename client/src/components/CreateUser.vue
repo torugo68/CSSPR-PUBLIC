@@ -221,7 +221,7 @@ import { ca } from 'vuetify/locale';
 
                 if (tcc.value) {
                   try {
-                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 1 }, { withCredentials: true })
+                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 1, value: sid.value.value }, { withCredentials: true })
                   } catch (error) {
                     toastr.error('Não foi possivel adicionar o TCC', error);
                   }
@@ -229,7 +229,7 @@ import { ca } from 'vuetify/locale';
 
                 if (tur.value) {
                   try {
-                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 2 }, { withCredentials: true })
+                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 2, value: sid.value.value }, { withCredentials: true })
                   } catch (error) {
                     toastr.error('Não foi possivel adicionar o TUR', error);
                   }

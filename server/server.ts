@@ -11,11 +11,21 @@ import api from './routes/api';
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from this origin
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (allowedOrigins.indexOf(origin || '') !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, // Allow cookies to be sent
-}));
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(logger('dev'));
 app.use(express.json());

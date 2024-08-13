@@ -10,7 +10,6 @@ declare module 'vue' {
     CreateDepartment: typeof import('./src/components/CreateDepartment.vue')['default']
     CreateRole: typeof import('./src/components/CreateRole.vue')['default']
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
-    Dashboard: typeof import('./src/components/Dashboard.vue')['default']
     DataTableUser: typeof import('./src/components/DataTableUser.vue')['default']
     EditField: typeof import('./src/components/editField.vue')['default']
     EditUser: typeof import('./src/components/EditUser.vue')['default']
