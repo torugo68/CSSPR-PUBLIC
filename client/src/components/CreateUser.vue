@@ -116,7 +116,6 @@
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-import { ca } from 'vuetify/locale';
 
   const emit = defineEmits(['closed']);
 
@@ -155,7 +154,6 @@ import { ca } from 'vuetify/locale';
 
       SelectedSystems (value) {
         if (selectedSystems.value.value === undefined || selectedSystems.value.value === null) selectedSystems.value.value = '';
-        console.log(selectedSystems.value.value);
         return true
       },
 
@@ -257,7 +255,6 @@ import { ca } from 'vuetify/locale';
             .catch(error => {
               loading.value = false;
               toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', error);
-              console.error(error);
             });
           } catch (e) {
             loading.value = false;
@@ -285,7 +282,7 @@ import { ca } from 'vuetify/locale';
         roles.value = response.data;
       })
       .catch(error => {
-        console.error('Error fetching roles:', error);
+        console.error('Error fetching roles');
       });
       
       axios.get('http://localhost:3001/api/department', { withCredentials: true })
@@ -293,10 +290,10 @@ import { ca } from 'vuetify/locale';
           departments.value = response.data;
         })
         .catch(error => {
-          console.error('Error fetching departments:', error);
+          console.error('Error fetching departments');
         });
     } catch (error) {
-      console.log('Errors to fetch data', error);
+      console.log('Errors to fetch data');
     }
   });
 </script>

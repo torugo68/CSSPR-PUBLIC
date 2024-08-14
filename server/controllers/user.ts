@@ -56,7 +56,7 @@ export const update = async (req: Request, res: Response) => {
             res.status(400).json({message: "Invalid data", errors: e.format()});
         }
         else {
-            res.status(500).json({ message: "Error on update user." });
+            res.status(500).json({ message: "Error on update user.", error: e});
         }
     }
 }
@@ -107,6 +107,7 @@ export const findOne = async (req: Request, res: Response) => {
                 },
                 sids: {
                     select: {
+                        id: true,
                         sidId: true,
                         value: true,
                         sid: {

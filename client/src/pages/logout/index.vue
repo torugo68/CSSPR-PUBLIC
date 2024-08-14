@@ -23,7 +23,7 @@ export default {
             }
         })
         .catch(error => {
-            console.error('An error occurred:', error);
+            console.error('An error occurred:');
         })
         .finally(() => {
             this.loading = false;

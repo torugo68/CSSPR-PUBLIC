@@ -57,53 +57,96 @@
                   label="Selecione o Setor"
                   :error-messages="department.errorMessage.value"
                 ></v-select>
-
                 <v-select
-                  v-model="selectedSystems.value.value"
-                  :items="systems.map(item => item.name).sort((a, b) => a.localeCompare(b))"
-                  label="Gerenciar Sistemas"
-                  :error-messages="selectedSystems.errorMessage.value"
-                  multiple
-                >
-                <label></label>
+                v-model="selectedSystems.value.value"
+                :items="systems.map(item => item.name).sort((a, b) => a.localeCompare(b))"
+                label="Gerenciar Sistemas"
+                :error-messages="selectedSystems.errorMessage.value"
+                multiple
+              >
                 <template v-slot:selection="{ item, index }">
-                  <v-chip v-if="index < 3">
-                    <span>{{ item.title }}</span>
-                  </v-chip>
-                  <span v-if="index === 3" class="text-grey text-caption align-self-center">
-                    (+{{ selectedSystems.value.value.length - 3 }} outros)
-                  </span>
+                  <div v-if="selectedSystems.value.value.length > 1">
+                    <v-chip v-if="index < 4 && index != 0">
+                        <span>{{ item.title }}</span>
+                    </v-chip>
+                    <span
+                        v-if="index === 4"
+                        class="text-grey text-caption align-self-center"
+                    >
+                        (+{{ selectedSystems.value.value.length - 4 }} outros)
+                    </span>
+                  </div>
+                  <div v-else>
+                    <span
+                      class="text-grey text-caption align-self-center"
+                    >
+                      (Nenhum sistema selecionado)
+                    </span>
+                  </div>
                 </template>
-                <template v-slot:no-data>
-                  <span class="text-grey text-caption align-self-center">
-                    Nenhum sistema selecionado
-                  </span>
-                </template>
-                </v-select>
-                <div v-for="item, index in sids" :key="item">
-                  <div style="display: flex; align-items: center;">
-                    <div v-if="item.activated" style="flex: 1;">
-                      <div style="display: flex; align-items: center;"> 
-                        <v-text-field
-                        v-model="item.value"
-                          :label="item.sid.name"
-                          :error-messages="item.errorMessage"
-                          clearable
-                          variant="underlined"
-                          class="mb-3 custom-text-field"
-                          @input="validateSid(item.value, index)"
-                          ></v-text-field>
-                        <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
-                      </div>
+              </v-select>
+              <div class="d-flex align-items-center mb-3">
+                <span class="me-1 ml-2">Adicionar novo termo</span>
+                <v-icon small @click="addNewSid()" class="ml-1">mdi-plus-circle</v-icon>
+              </div>
+              <div v-for="item, index in sids" :key="item">
+                <div style="display: flex; align-items: center;">
+                  <div v-if="item.activated" style="flex: 1;">
+                    <v-container fluid v-if="item.newSid">
+                      <v-row justify="start">
+                        <v-col cols="auto">
+                          <div>
+                            <v-select
+                              v-model="item.sid.name"
+                              :items="allSids.map(item => item.name).filter(item => !sids.map(item => item.sid.name).includes(item)).sort((a, b) => a.localeCompare(b))"
+                              item-text="name"
+                              item-value="id"
+                              label="Termo"
+                            ></v-select>
+                          </div>
+                        </v-col>
+                        <v-col>
+                          <v-row class="fill-height d-flex">
+                            <v-col>
+                              <v-text-field
+                                v-model="item.value"
+                                :label="item.sid.name"
+                                :error-messages="item.errorMessage"
+                                clearable
+                                variant="underlined"
+                                class="mb-3 custom-text-field"
+                                @input="validateSid(item.value, index)"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col cols="auto" class="d-flex align-center">
+                              <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                            </v-col>
+                          </v-row>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                    
+                    <div style="display: flex; align-items: center;" v-else> 
+                      <v-text-field
+                      v-model="item.value"
+                        :label="item.sid.name"
+                        :error-messages="item.errorMessage"
+                        clearable
+                        variant="underlined"
+                        class="mb-3 custom-text-field"
+                        @input="validateSid(item.value, index)"
+                        ></v-text-field>
+                      <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
                     </div>
-                    <div v-else style="display: flex; align-items: center; flex: 1;" class="mb-3">
-                      <p style="margin-right: 3px; font-weight: bold; font-size: 1.05em;" class="mb-2 ml-1">SID {{ item.sid.name }}:</p>
-                      <a style="font-size: 1.05em" class="ml-2 mb-2" :href="baseUrl" @click.prevent="copyToClipboard(item.value)">{{ item.value }}</a>
-                      <v-icon small @click="toggleActivation(index)" class="ml-1 mb-2">mdi-pencil</v-icon>
-                    </div>
+                  </div>
+                  <div v-else style="display: flex; align-items: center; flex: 1;" class="mb-3">
+                    <p style="margin-right: 3px; font-weight: bold; font-size: 1.05em;" class="mb-2 ml-1">SID {{ item.sid.name }}:</p>
+                    <a style="font-size: 1.05em" class="ml-2 mb-2" :href="baseUrl" @click.prevent="copyToClipboard(item.value)">{{ item.value }}</a>
+                    <v-icon small @click="toggleActivation(index)" class="ml-1 mb-2">mdi-pencil</v-icon>
+                  </div>
                 </div>
               </div>
-              <div class="button-container">
+              <div class="button-container mt-5">
                 <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
                 <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check" :disabled="Editing()">Salvar</v-btn>
               </div>
@@ -128,16 +171,16 @@
   
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-import { errorMessages } from 'vue/compiler-sfc';
-import { id } from 'vuetify/locale';
-  
   
   const loading = ref(false);
   const loadingComponent = ref(false);
-  const emit = defineEmits(['closed']);
+  const emit = defineEmits(['closed', 'editedUser']);
 
   const emitValue = (value) => {
     emit('closed', value);
+  };
+  const emitEditedUser = (value) => {
+    emit('editedUser', value);
   };
   
   const { handleSubmit } = useForm({
@@ -168,6 +211,7 @@ import { id } from 'vuetify/locale';
       },
 
       SelectedSystems (value) {
+        if (selectedSystems.value.value === undefined || selectedSystems.value.value === null || selectedSystems.value.value.length === 0) selectedSystems.value.value = '';
         return true
       },
     },
@@ -185,12 +229,13 @@ import { id } from 'vuetify/locale';
   const departments = ref([]);
   const roles = ref([]);
   const systems = ref([]);
+  const allSids = ref([]);
+  const oldUserData = ref([]);
   
   const props = defineProps({
           userId: Number,
       })
 
-  // toggle editing 
   const editName = ref(false);
   const editEmail = ref(false);
   function toggleNameEdit() {
@@ -221,9 +266,9 @@ import { id } from 'vuetify/locale';
 
         await axios.delete(`http://localhost:3001/api/permission/${props.userId}`, { withCredentials: true })
         
-        if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 0)
+        if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 1)
         {
-          for (let i = 0; i < selectedSystems.value.value.length; i++) {
+          for (let i = 1; i < selectedSystems.value.value.length; i++) {
             let newPermission = {
               userId: props.userId,
               systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
@@ -235,13 +280,47 @@ import { id } from 'vuetify/locale';
           }
         }
 
-        console.log(userData);
+        try {
+          for (let i=0; i < oldUserData.value.sids.length; i++) {
+          if (sids.value[i].value !== oldUserData.value.sids[i].value) {
+            let newSid = {
+              userId: props.userId,
+              sidId: sids.value[i].sidId,
+              value: sids.value[i].value
+            }
+            await axios.put(`http://localhost:3001/api/user-sids/${sids.value[i].id}`, newSid, { withCredentials: true })
+              .catch(error => {
+                console.log('Usuário foi salvo, porém não foi possivel atualizar os sids.');
+              });
+            }
+          }
+
+          if (sids.value.length != oldUserData.value.sids.length) {
+            for (let i= oldUserData.value.sids.length; i < sids.value.length; i++) {
+              let newSid = {
+                userId: props.userId,
+                sidId: allSids.value.find(sid => sid.name === sids.value[i].sid.name).id,
+                value: sids.value[i].value
+              }
+
+              await axios.post('http://localhost:3001/api/user-sids', newSid, { withCredentials: true })
+            }
+          }
+        } catch (error) {
+          console.error('Error saving sids');
+        }
+
+        await axios.get(`http://localhost:3001/api/user/${props.userId}`, { withCredentials: true })
+        .then(response => {
+          emitEditedUser(response.data);
+        });
+
         toastr.success('Usuário salvo com sucesso.');
         emitValue(true);  
       } catch (error) {
         loading.value = false;
-        toastr.error('Erro ao salvar usuário.');
-        console.error('Error saving user:', error);
+        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email');
+        console.error('Error saving user');
       }
 
       loading.value = false;
@@ -266,7 +345,7 @@ import { id } from 'vuetify/locale';
           roles.value = response.data;
         })
         .catch(error => {
-          console.error('Error fetching roles:', error);
+          console.error('Error fetching roles');
         });
         
         await axios.get('http://localhost:3001/api/department', { withCredentials: true })
@@ -274,18 +353,26 @@ import { id } from 'vuetify/locale';
             departments.value = response.data;
           })
           .catch(error => {
-            console.error('Error fetching departments:', error);
+            console.error('Error fetching departments');
           });
+
+        await axios.get(`http://localhost:3001/api/sid`, { withCredentials: true })
+        .then(response => {
+          allSids.value = response.data;
+        });
 
         await axios.get(`http://localhost:3001/api/user/${props.userId}`, { withCredentials: true })
         .then(response => {
-            console.log(response.data);
-            id.value = response.data.id
+            oldUserData.value = response.data;
             name.value.value = response.data.name
             email.value.value = response.data.email
             role.value.value = roles.value.find(role => role.id === response.data.roleId).name
             department.value.value = departments.value.find(department => department.id === response.data.departmentId).name
-            selectedSystems.value.value = response.data.permissions.map(permission => systems.value.find(system => system.id === permission.systemId).name)
+            selectedSystems.value.value = [''].concat(
+              response.data.permissions.map(permission => 
+                systems.value.find(system => system.id === permission.systemId).name
+              )
+            );
             sids.value = response.data.sids.map(item => ({
               ...item,
               activated: false,
@@ -295,7 +382,7 @@ import { id } from 'vuetify/locale';
 
         loadingComponent.value = false;
       } catch (error) {
-          loadingComponent.value = false;
+        loadingComponent.value = false;
       }
     }, 300);
   });
@@ -322,9 +409,8 @@ import { id } from 'vuetify/locale';
     function copyToClipboard(value) {
       const url = baseUrl;
       navigator.clipboard.writeText(value).then(() => {
-        console.log('URL copied to clipboard');
       }).catch(err => {
-        console.error('Failed to copy: ', err);
+        console.error('Failed to copy');
       });
       window.open(url, '_blank');
     }
@@ -354,22 +440,41 @@ import { id } from 'vuetify/locale';
       } else {
         sids.value[index].errorMessage = '';
       }
-      console.log(value, sids.value[index].value, sids.value[index].activated, sids.value[index].errorMessage);
     }
 
     function toggleActivation(index) {
       sids.value[index].activated = !sids.value[index].activated;
-      console.log(sids.value[index].activated)
     }
 
     function Editing() {
       if (editName.value || editEmail.value || sids.value.some(item => item.activated)) {
-        console.log(true);
         return true;
       } else {
-        console.log(false);
         return false;
       }
+    }
+
+    function addNewSid() {
+      const firstAvailableName = allSids.value
+      .map(item => item.name)
+      .filter(item => !sids.value.map(item => item.sid.name).includes(item))[0];
+      const firstAvailableId = allSids.value.find(item => item.name === firstAvailableName)?.id;
+      if (!firstAvailableName || !firstAvailableId) {
+        return toastr.error('Todos os termos já foram adicionados.');
+      }
+
+      return sids.value.push({
+        id: null,
+        userId: props.userId,
+        sidId: firstAvailableId,
+        value: '',
+        activated: true,
+        newSid: true,
+        errorMessage: 'Campo obrigatório.',
+        sid: {
+          name: firstAvailableName
+        }
+      });
     }
   </script>
 

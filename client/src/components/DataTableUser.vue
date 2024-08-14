@@ -2,7 +2,7 @@
     <v-data-table
       class="data-table"
       :headers="headers"
-      :items="usersData"
+      :items="filteredUsers"
       :sort-by="[{ key: 'email', order: 'asc' }]"
       v-if="!loading"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
@@ -40,6 +40,7 @@
                   variant="solo"
                   hide-details
                   single-line
+                  v-model="searchQuery"
                 ></v-text-field>
               </v-card-text>
             </template>
@@ -57,7 +58,7 @@
             </v-card>
           </v-dialog>
           <v-dialog v-model="dialogEdit">
-            <edit-user :userId="id" @closed="closeEdit"></edit-user>
+            <edit-user :userId="id" @closed="closeEdit" @editedUser="editedUser"></edit-user>
           </v-dialog>
         </v-toolbar>
       </template>
@@ -87,7 +88,7 @@
     </template>
 
 <script setup>
-  import { ref, reactive, watch, onMounted, nextTick } from 'vue';
+  import { ref, reactive, watch, onMounted, nextTick, computed } from 'vue';
   import axios from 'axios';
   
   import toastr from 'toastr';
@@ -128,7 +129,16 @@
   const usersData = ref([]);
   const roles = ref([]);
   const departments = ref([]);
+  const searchQuery = ref('');
   
+  const filteredUsers = computed(() => {
+    const query = searchQuery.value.toLowerCase();
+    return usersData.value.filter(user => 
+      user.name.toLowerCase().includes(query) || 
+      user.email.toLowerCase().includes(query)
+    );
+  });
+
   watch(dialog, (val) => {
     if (!val) close();
   });
@@ -141,8 +151,20 @@
     dialogEdit.value = false;
   };
 
+  const editedUser = (value) => {
+    const user = usersData.value.find(user => user.id === value.id);
+    if (user) {
+      user.name = value.name;
+      user.email = value.email;
+      user.roleId = roles.value.find(role => role.id === value.roleId).name;
+      user.departmentId = departments.value.find(department => department.id === value.departmentId).name;
+    } else {
+      console.error('User not found');
+    }
+    dialogEdit.value = false;
+  };
+
   const handleNewUser = (value) => {
-    console.log(value)
     usersData.value.push({
       id: value.id,
       name: value.name,
@@ -231,7 +253,7 @@
           departments.value = response.data;
         })
         .catch(error => {
-          console.error('Error fetching departments:');
+          console.error('Error fetching departments');
         });
 
       const userInfo = users.data.map(user => {
@@ -246,7 +268,7 @@
 
       usersData.value = userInfo;
     } catch (error) {
-      console.error("Erro ao carregar o componente");
+      console.error("Error fetching data");
     }
   }
   </script>
