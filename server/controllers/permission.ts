@@ -23,18 +23,21 @@ export const create = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on creating a new permission."});
+            res.status(500).json({message: "Error on creating a new permission.", e:e});
         }
     }
 }//
 
 export const remove = async (req: Request, res: Response) => {
     try {
+        const userId = Number(req.params.id);
+
         await prisma.permission.deleteMany({
-            where: { userId: Number(req.params.userId) },
+            where: { userId: userId },
         });
+        res.status(200).json({ message: "Permissions deleted successfully." });
     } catch (e) {
-        res.status(500).json({ message: "Error on delete permission." });
+        res.status(500).json({ message: "Error on delete permissions." });
     }
 }
 

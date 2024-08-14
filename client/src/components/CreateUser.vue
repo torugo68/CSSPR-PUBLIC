@@ -47,15 +47,24 @@
                 multiple
               >
                 <template v-slot:selection="{ item, index }">
-                <v-chip v-if="index < 3">
-                    <span>{{ item.title }}</span>
-                </v-chip>
-                <span
-                    v-if="index === 3"
-                    class="text-grey text-caption align-self-center"
-                >
-                    (+{{ selectedSystems.value.value.length - 3 }} outros)
-                </span>
+                  <div v-if="selectedSystems.value.value.length > 1">
+                    <v-chip v-if="index < 4 && index != 0">
+                        <span>{{ item.title }}</span>
+                    </v-chip>
+                    <span
+                        v-if="index === 4"
+                        class="text-grey text-caption align-self-center"
+                    >
+                        (+{{ selectedSystems.value.value.length - 4 }} outros)
+                    </span>
+                  </div>
+                  <div v-else>
+                    <span
+                      class="text-grey text-caption align-self-center"
+                    >
+                      (Nenhum sistema selecionado)
+                    </span>
+                  </div>
               </template>
             </v-select>
             <v-container fluid>
@@ -145,6 +154,8 @@ import { ca } from 'vuetify/locale';
       },
 
       SelectedSystems (value) {
+        if (selectedSystems.value.value === undefined || selectedSystems.value.value === null) selectedSystems.value.value = '';
+        console.log(selectedSystems.value.value);
         return true
       },
 
@@ -204,10 +215,9 @@ import { ca } from 'vuetify/locale';
             })
             .then(async response => {
               if (response.status === 200) {
-                if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 0)
+                if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 1)
                 {
-                  await axios.delete(`http://localhost:3001/api/permission/${response.data.id}`, { withCredentials: true });
-                  for (let i = 0; i < selectedSystems.value.value.length; i++) {
+                  for (let i = 1; i < selectedSystems.value.value.length; i++) {
                     let newPermission = {
                       userId: response.data.id,
                       systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
@@ -221,17 +231,17 @@ import { ca } from 'vuetify/locale';
 
                 if (tcc.value) {
                   try {
-                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 1, value: sid.value.value }, { withCredentials: true })
+                    await axios.post('http://localhost:3001/api/user-sids', { userId: response.data.id, sidId: 1, value: sid.value.value }, { withCredentials: true })
                   } catch (error) {
-                    toastr.error('Não foi possivel adicionar o TCC', error);
+                    toastr.error('Não foi possivel adicionar o TCC');
                   }
                 }
 
                 if (tur.value) {
                   try {
-                    await axios.post('http://localhost:3001/api/sids', { userId: response.data.id, sidId: 2, value: sid.value.value }, { withCredentials: true })
+                    await axios.post('http://localhost:3001/api/user-sids', { userId: response.data.id, sidId: 2, value: sid.value.value }, { withCredentials: true })
                   } catch (error) {
-                    toastr.error('Não foi possivel adicionar o TUR', error);
+                    toastr.error('Não foi possivel adicionar o TUR');
                   }
                 }
 
@@ -247,6 +257,7 @@ import { ca } from 'vuetify/locale';
             .catch(error => {
               loading.value = false;
               toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', error);
+              console.error(error);
             });
           } catch (e) {
             loading.value = false;

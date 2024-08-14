@@ -129,6 +129,7 @@
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
 import { errorMessages } from 'vue/compiler-sfc';
+import { id } from 'vuetify/locale';
   
   
   const loading = ref(false);
@@ -218,11 +219,13 @@ import { errorMessages } from 'vue/compiler-sfc';
           }
         });
 
+        await axios.delete(`http://localhost:3001/api/permission/${props.userId}`, { withCredentials: true })
+        
         if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 0)
         {
           for (let i = 0; i < selectedSystems.value.value.length; i++) {
             let newPermission = {
-              userId: response.data.id,
+              userId: props.userId,
               systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
             }
             await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
@@ -277,6 +280,7 @@ import { errorMessages } from 'vue/compiler-sfc';
         await axios.get(`http://localhost:3001/api/user/${props.userId}`, { withCredentials: true })
         .then(response => {
             console.log(response.data);
+            id.value = response.data.id
             name.value.value = response.data.name
             email.value.value = response.data.email
             role.value.value = roles.value.find(role => role.id === response.data.roleId).name

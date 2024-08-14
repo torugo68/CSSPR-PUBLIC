@@ -38,7 +38,6 @@ export const RoleOrDepartmentUpdateSchema = z.object({
 export const permissionSchema = z.object({
     userId : z.number(),
     systemId: z.number(),
-    allow: z.boolean(),
 });
 
 export const sidSchema = z.object({

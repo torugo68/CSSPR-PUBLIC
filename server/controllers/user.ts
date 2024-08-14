@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ZodError } from "zod";
 
-import { userSchema, userUpdateSchema } from "../middleware/validator";
+import { userSchema, userUpdateSchema, sidSchema } from "../middleware/validator";
 import prisma from "../config/db";
 
 export const create = async (req: Request, res: Response) => {
@@ -18,11 +18,6 @@ export const create = async (req: Request, res: Response) => {
                 email: validatedData.data.email,
                 roleId: validatedData.data.roleId,
                 departmentId: validatedData.data.departmentId,
-                sids: req.body.sid ? {
-                    create: req.body.sid.map((sidValue: number) => ({
-                        value: sidValue
-                    }))
-                } : undefined,
             }
         });
         res.status(200).json(user);
@@ -161,7 +156,31 @@ export const findAll = async (req: Request, res: Response) => {
                 ...query,
                 deletedAt: null
             },
-            take: parsedCount
+            take: parsedCount,
+            include: {
+                permissions: true,
+                role: {
+                    select: {
+                        name: true,
+                    },
+                },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+                sids: {
+                    select: {
+                        sidId: true,
+                        value: true,
+                        sid: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
         });
 
         res.status(200).json(users);
