@@ -19,6 +19,7 @@ model User {
   permissions  Permission[]
   sids         UserSids[]
   Admin        Admin[]
+  logs   Logs[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   deletedAt    DateTime?
@@ -30,6 +31,7 @@ model Admin {
   password  String
   user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   userId    Int?
+  logs   Logs[]
   allow Boolean @default(false)
   deletedAt DateTime?
 }
@@ -78,4 +80,21 @@ model UserSids {
   value     String
 
   @@unique([sidId, userId])
+}
+
+model OperationsTypes {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  logs      Logs[]
+}
+
+model Logs {
+  id        Int       @id @default(autoincrement())
+  user     User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  userId   Int?
+  admin     Admin?    @relation(fields: [adminId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  adminId   Int?
+  operation OperationsTypes? @relation(fields: [operationId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  operationId Int?
+  createdAt DateTime   @default(now())
 }

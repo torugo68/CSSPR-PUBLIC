@@ -44,7 +44,7 @@ export const update = async (req: Request, res: Response) => {
         res.status(200).json(department);
     } catch (e) {
         if (e instanceof ZodError) {
-            res.status(400).json({message: "Invalid data", errors: e.format()});
+            res.status(400).json({message: "Invalid data" });
         }
         else {
             res.status(500).json({ message: "Error on update department." });

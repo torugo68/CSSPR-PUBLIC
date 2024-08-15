@@ -3,6 +3,20 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  const operations = [
+    { name: "Criado" },
+    { name: "Excluído" },
+    { name: "Termos Atualizados" },
+    { name: "Atualização de Permissões" },
+    { name: "SID Atualizado" },
+    { name: "Setor do usuário Atualizado" },
+    { name: "Grupo do usuário Atualizado" },
+    { name: "Usuario Atualizado" },
+    { name: "Setor criado" },
+    { name: "Grupo criado" },
+    { name: "Setor Atualizado" },
+  ]
+
   const departments = [
     { name: 'ATJ - Assessoria Técnica do Juridica' },
     { name: 'CCP - Câmara de Conciliação de Precatórios' },
@@ -208,6 +222,12 @@ async function main() {
       data: item,
     });
   }
+
+  for (const item of operations) {
+    await prisma.operationsTypes.create({
+      data: item,
+    });
+  }
 }
 
 main()
@@ -219,5 +239,5 @@ main()
     await prisma.$disconnect();
   });
 
-// 6. Run Seed Script
+// Run Seed Script
 // npx ts-node seed.ts

@@ -41,18 +41,22 @@ export function initPassport(app: Express) {
     });
 
 
-    passport.deserializeUser((user: any, done) => {
+    passport.deserializeUser(async (id: number, done) => {
         try {
-            done(null, user);
+            const user = await prisma.admin.findUnique({
+                where: { id: id }
+            });
+            done(null, user?.id);
         } catch (error) {
             done(error);
         }
     });
 }
 
-export function isAuthenticated(req: Request ,res: Response, next: NextFunction): Response | void {
-    if(req.user)
+export function isAuthenticated(req: Request, res: Response, next: NextFunction): Response | void {
+    if (req.user) {
         return next();
-    else
+    } else {
         return res.status(401).json({ message: "Unauthorized" });
-}
+    }
+  }

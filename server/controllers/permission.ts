@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ZodError } from "zod";
 import prisma from "../config/db";
 import { permissionSchema } from "../middleware/validator";
-//
+
 export const create = async (req: Request, res: Response) => {
     try {
         const validatedData = permissionSchema.safeParse(req.body);
@@ -23,10 +23,10 @@ export const create = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on creating a new permission.", e:e});
+            res.status(500).json({message: "Error on creating a new permission." });
         }
     }
-}//
+};
 
 export const remove = async (req: Request, res: Response) => {
     try {
@@ -39,7 +39,7 @@ export const remove = async (req: Request, res: Response) => {
     } catch (e) {
         res.status(500).json({ message: "Error on delete permissions." });
     }
-}
+};
 
 export const findAll = async (req: Request, res: Response) => {
     try {

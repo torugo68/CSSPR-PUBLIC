@@ -24,7 +24,7 @@ export const create = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on creating a new system."});
+            res.status(500).json({ message: "Error on creating a new system." });
         }
     }
 }
@@ -49,7 +49,6 @@ export const update = async (req: Request, res: Response) => {
     }
 }
 
-// carefully implement the remove function
 export const remove = async (req: Request, res: Response) => {
     try {
         await prisma.system.delete({

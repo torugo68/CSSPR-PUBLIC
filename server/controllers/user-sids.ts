@@ -67,7 +67,7 @@ export const remove = async (req: Request, res: Response) => {
         await prisma.userSids.delete({
             where: { id: Number(req.params.id) },
         });
-        res.status(200).json({ message: "sids removed successfully." }); // Corrected the unclosed string literal
+        res.status(200).json({ message: "sids removed successfully." }); 
     } catch (e) {
         res.status(500).json({ message: "Error on removing sids." });
     }

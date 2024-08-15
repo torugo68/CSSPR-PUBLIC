@@ -15,6 +15,7 @@ declare module 'vue' {
     EditUser: typeof import('./src/components/EditUser.vue')['default']
     FooterBar: typeof import('./src/components/FooterBar.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
+    Logs: typeof import('./src/components/logs.vue')['default']
     NavBar: typeof import('./src/components/NavBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -7,6 +7,7 @@ import path from 'path';
 import cors from 'cors';
 
 import { initPassport, isAuthenticated } from "./middleware/passport";
+import logAcess from "./middleware/logUserActions";
 import api from './routes/api';
 
 const app = express();
@@ -26,6 +27,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(logAcess);
 
 app.use(logger('dev'));
 app.use(express.json());

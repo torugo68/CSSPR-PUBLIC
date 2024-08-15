@@ -44,7 +44,7 @@ export const update = async (req: Request, res: Response) => {
         res.status(200).json(sid);
     } catch (e) {
         if (e instanceof ZodError) {
-            res.status(400).json({message: "Invalid data", errors: e.format()});
+            res.status(400).json({ message: "Invalid data" });
         }
         else {
             res.status(500).json({ message: "Error on update sid." });
@@ -52,13 +52,12 @@ export const update = async (req: Request, res: Response) => {
     }
 }
 
-// carefully implement the remove function
 export const remove = async (req: Request, res: Response) => {
     try {
         await prisma.sid.delete({
             where: { id: Number(req.params.id) },
         });
-        res.status(200).json({ message: "sid removed successfully." }); // Corrected the unclosed string literal
+        res.status(200).json({ message: "sid removed successfully." });
     } catch (e) {
         res.status(500).json({ message: "Error on removing sid." });
     }
@@ -83,9 +82,8 @@ interface sidQuery {
 export const findAll = async (req: Request, res: Response) => {
     try {
         const { name, email } = req.query;
-
-        // Initialize the query object with the specific type
         let query: sidQuery = {};
+
         if (name) {
             query['name'] = { contains: name as string };
         }

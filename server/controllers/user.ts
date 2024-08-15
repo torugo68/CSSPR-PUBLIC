@@ -53,10 +53,10 @@ export const update = async (req: Request, res: Response) => {
         res.status(200).json(user);
     } catch (e) {
         if (e instanceof ZodError) {
-            res.status(400).json({message: "Invalid data", errors: e.format()});
+            res.status(400).json({message: "Invalid data" });
         }
         else {
-            res.status(500).json({ message: "Error on update user.", error: e});
+            res.status(500).json({ message: "Error on update user." });
         }
     }
 }
@@ -67,7 +67,7 @@ export const remove = async (req: Request, res: Response) => {
             where: { id: Number(req.params.id) },
             data: { deletedAt: new Date() }
         });
-        res.status(200).json({ message: "User removed successfully." }); // Corrected the unclosed string literal
+        res.status(200).json({ message: "User removed successfully." }); 
     } catch (e) {
         res.status(500).json({ message: "Error on removing user." });
     }
