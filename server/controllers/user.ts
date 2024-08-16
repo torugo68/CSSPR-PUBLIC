@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ZodError } from "zod";
 
-import { userSchema, userUpdateSchema, sidSchema } from "../middleware/validator";
+import { userSchema, userUpdateSchema, optionalSidSchema } from "../middleware/validator";
 import prisma from "../config/db";
 
 export const create = async (req: Request, res: Response) => {
@@ -20,13 +20,33 @@ export const create = async (req: Request, res: Response) => {
                 departmentId: validatedData.data.departmentId,
             }
         });
+
+        if (req.body.permissions) {
+            await prisma.permission.createMany({
+                data: req.body.permissions.map((permission: any) => {
+                    return { systemId: permission.systemId, userId: user.id }
+                })
+            });
+        }
+
+        if (req.body.userSids) {
+            await prisma.userSids.createMany({
+                data: req.body.userSids.map((sid: any) => {
+                    const validatedData = optionalSidSchema.safeParse(sid);
+                    if (validatedData.success) {
+                        return { userId: user.id, sidId: sid.sidId, value: sid.value }
+                    }
+                })
+            });
+        }
+          
         res.status(200).json(user);
     } catch (e) {
         if (e instanceof ZodError) {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({ message: "Error on creating a new user." });
+            res.status(500).json({ message: "Error on creating a new user.", error: e });
         }
     }
 }

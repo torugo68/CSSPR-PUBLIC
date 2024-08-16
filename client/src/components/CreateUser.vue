@@ -158,6 +158,8 @@
       },
 
       sid (value) {
+        if (!tcc.value && !tur.value) return true;
+
         if (value) {
           if (value.length > 0) {
             sid.value.value =  sid.value.value.replace(/\D/g, '');
@@ -174,6 +176,8 @@
             if (!/^\d{2}\.\d{3}\.\d{3}-\d{1}$/.test(value)) return 'Formato inválido. Ex: 00.000.000-0';
           }
         }
+
+        if ((tcc.value || tur.value) && !value) return 'Campo obrigatório.';
         return true
       }
     },
@@ -188,7 +192,6 @@
   const tur = ref(false);
   const tcc = ref(false);
   
-  // api
   const departments = ref([]);
   const roles = ref([]);
   const systems = ref([]);
@@ -198,12 +201,51 @@
 
       setTimeout(async () => {
           try {
-            const userData = JSON.stringify({
+            let userSids = [];
+            let permissions = [];
+
+            let userData = {
               name: values.name,
               email: values.email,
               roleId: roles.value.find(role => role.name === values.role).id,
-              departmentId: departments.value.find(department => department.name === values.department).id
-            });
+              departmentId: departments.value.find(department => department.name === values.department).id,
+            };
+
+            if (tcc.value) {
+              userSids.push({
+                sidId: 1,
+                value: sid.value.value
+              });
+            }
+
+            if (tur.value) {
+              userSids.push({
+                sidId: 2,
+                value: sid.value.value
+              });
+            }
+
+            if (userSids.length > 0) {
+              userData = {
+                ...userData,
+                userSids
+              }
+            }
+            if (selectedSystems.value.value && selectedSystems.value.value.length > 1) {
+              for (let i = 1; i < selectedSystems.value.value.length; i++) {
+                const system = systems.value.find(item => item.name === selectedSystems.value.value[i]);
+                if (system) {
+                  permissions.push({
+                    systemId: system.id,
+                  });
+                }
+              }
+              
+              userData = {
+                ...userData,
+                permissions
+              }
+            }
 
             await axios.post('http://localhost:3001/api/user', userData, {
               withCredentials: true,
@@ -211,61 +253,21 @@
                 'Content-Type': 'application/json'
               }
             })
-            .then(async response => {
-              if (response.status === 200) {
-                if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 1)
-                {
-                  for (let i = 1; i < selectedSystems.value.value.length; i++) {
-                    let newPermission = {
-                      userId: response.data.id,
-                      systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
-                    }
-                    await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
-                    .catch(error => {
-                      console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
-                    });
-                  }
-                }
-
-                if (tcc.value) {
-                  try {
-                    await axios.post('http://localhost:3001/api/user-sids', { userId: response.data.id, sidId: 1, value: sid.value.value }, { withCredentials: true })
-                  } catch (error) {
-                    toastr.error('Não foi possivel adicionar o TCC');
-                  }
-                }
-
-                if (tur.value) {
-                  try {
-                    await axios.post('http://localhost:3001/api/user-sids', { userId: response.data.id, sidId: 2, value: sid.value.value }, { withCredentials: true })
-                  } catch (error) {
-                    toastr.error('Não foi possivel adicionar o TUR');
-                  }
-                }
-
-                loading.value = false;
-                toastr.success('Usuário criado com sucesso');
-                emitValue(response.data);
-              } else {
-                loading.value = false;
-                toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
-                handleReset();
-              }
-            })
-            .catch(error => {
+            .then(response => {
               loading.value = false;
-              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', error);
+              toastr.success('Usuário criado com sucesso');
+              emitValue(response.data);
+            }).catch(e => {
+              loading.value = false;
+              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
             });
           } catch (e) {
             loading.value = false;
-            toastr.error('Erro ao criar usuário');
+            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
           }
         }, 1000);
     });
 
-
-    
-    
   onMounted(async () => {
     try {
       await axios.get('http://localhost:3001/api/system', {

@@ -1,4 +1,3 @@
-import { permission } from 'process';
 import { z } from 'zod';
 
 export const userSchema = z.object({
@@ -42,6 +41,11 @@ export const permissionSchema = z.object({
 
 export const sidSchema = z.object({
     userId: z.number(),
+    sidId: z.number(),
+    value: z.string().regex(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/),
+});
+
+export const optionalSidSchema = z.object({
     sidId: z.number(),
     value: z.string().regex(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/),
 });

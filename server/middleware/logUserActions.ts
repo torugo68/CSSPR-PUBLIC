@@ -18,8 +18,9 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
   res.json = function (body: any) {
     (async () => {
       try {
+        const userUpdateUrl = /^\/api\/user\/(\d+)$/;
+        const userSidsUpdateUrl = /^\/api\/user-sids\/(\d+)$/;
         if (req.originalUrl === '/api/user' && req.method === 'POST' && res.statusCode === 200) {
-          console.log(`${body.name} created | ${res.statusCode}`);
           const adminId = Number(req.user);
           await prisma.logs.create({
             data: {
@@ -29,8 +30,38 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
             }
           });
         } 
+        if (req.originalUrl === '/api/user-sids' && req.method === 'POST' && res.statusCode === 200) {
+          const adminId = Number(req.user);
+          await prisma.logs.create({
+            data: {
+              userId: Number(body.id),
+              adminId: adminId,
+              operationId: 3,
+            }
+          });
+        }
+        if (req.originalUrl === '/api/permission' && req.method === 'POST' && res.statusCode === 200) {
+          const adminId = Number(req.user);
+          await prisma.logs.create({
+            data: {
+              userId: Number(body.id),
+              adminId: adminId,
+              operationId: 4,
+            }
+          });
+        }
+        if (req.originalUrl.match(userUpdateUrl) && req.method === 'PUT' && res.statusCode === 200) {
+          const adminId = Number(req.user);
+          await prisma.logs.create({
+            data: {
+              userId: Number(body.id),
+              adminId: adminId,
+              operationId: 6,
+            }
+          });
+        }
       } catch (error) {
-        console.error('Error logging user creation:', error);
+        console.error('Error logging:', error);
       }
     })();
     return originalResJson.call(this, body);

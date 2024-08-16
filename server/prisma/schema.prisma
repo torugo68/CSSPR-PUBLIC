@@ -73,10 +73,10 @@ model Sid {
 
 model UserSids {
   id        Int       @id @default(autoincrement())
-  sid       Sid?      @relation(fields: [sidId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  sidId     Int?
-  user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  userId    Int?
+  sid       Sid      @relation(fields: [sidId], references: [id], onUpdate: Cascade)
+  sidId     Int
+  user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  userId    Int
   value     String
 
   @@unique([sidId, userId])

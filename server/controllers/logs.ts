@@ -18,7 +18,25 @@ export const create = async (req: Request, res: Response) => {
 
 export const findAll = async (req: Request, res: Response) => {
     try {
-        const logs = await prisma.logs.findMany();
+        const logs = await prisma.logs.findMany(
+            {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        }
+                    },
+                    admin: {
+                        select: {
+                            id: true,
+                            username: true,
+                        }
+                    },
+                }
+            }
+        );
         res.status(200).json(logs);
     } catch (e) {
         res.status(500).json({ message: "Error on find logs." });

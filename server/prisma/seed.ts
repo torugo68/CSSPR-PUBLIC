@@ -9,8 +9,6 @@ async function main() {
     { name: "Termos Atualizados" },
     { name: "Atualização de Permissões" },
     { name: "SID Atualizado" },
-    { name: "Setor do usuário Atualizado" },
-    { name: "Grupo do usuário Atualizado" },
     { name: "Usuario Atualizado" },
     { name: "Setor criado" },
     { name: "Grupo criado" },
