@@ -66,11 +66,42 @@ export const update = async (req: Request, res: Response) => {
             ...(validatedData.data.departmentId ? { departmentId: validatedData.data.departmentId } : {}),
         };
 
-        const user = await prisma.user.update({
+        let user = await prisma.user.update({
             where: { id: Number(req.params.id) },
             data: userData
         });
-        res.status(200).json(user);
+
+        let actions = {}
+        
+        if (validatedData.data.name) {
+            actions = {
+                ...actions,
+                nameEdited: true
+            }
+        }
+
+        if (validatedData.data.email) {
+            actions = {
+                ...actions,
+                emailEdited: true
+            }
+        }
+
+        if (validatedData.data.roleId) {
+            actions = {
+                ...actions,
+                roleIdEdited: true
+            }
+        }
+
+        if (validatedData.data.departmentId) {
+            actions = {
+                ...actions,
+                departmentIdEdited: true
+            }
+        }
+
+        res.status(200).json({user, actions});
     } catch (e) {
         if (e instanceof ZodError) {
             res.status(400).json({message: "Invalid data" });

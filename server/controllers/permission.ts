@@ -30,10 +30,10 @@ export const create = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
     try {
-        const userId = Number(req.params.id);
+        const id = Number(req.params.id);
 
-        await prisma.permission.deleteMany({
-            where: { userId: userId },
+        await prisma.permission.delete({
+            where : { id: id } 
         });
         res.status(200).json({ message: "Permissions deleted successfully." });
     } catch (e) {

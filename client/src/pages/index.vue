@@ -4,7 +4,7 @@
     <v-container fluid class="fill-height">
       <data-table-user v-if="tab === 1" />
       <create-user v-else-if="tab === 2" />
-      <create-role v-else-if="tab === 3" />
+      <data-table-logs v-else-if="tab === 3" />
       <create-department v-else />
     </v-container>
     <footer>

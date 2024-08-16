@@ -11,54 +11,88 @@ const logger = winston.createLogger({
   ]
 });
 
-// Middleware to log
 function logAccess(req: Request, res: Response, next: NextFunction): void {
   const originalResJson = res.json;
-
+  
   res.json = function (body: any) {
     (async () => {
       try {
         const userUpdateUrl = /^\/api\/user\/(\d+)$/;
         const userSidsUpdateUrl = /^\/api\/user-sids\/(\d+)$/;
-        if (req.originalUrl === '/api/user' && req.method === 'POST' && res.statusCode === 200) {
-          const adminId = Number(req.user);
-          await prisma.logs.create({
-            data: {
-              userId: Number(body.id),
-              adminId: adminId,
-              operationId: 1,
-            }
-          });
-        } 
-        if (req.originalUrl === '/api/user-sids' && req.method === 'POST' && res.statusCode === 200) {
-          const adminId = Number(req.user);
-          await prisma.logs.create({
-            data: {
-              userId: Number(body.id),
-              adminId: adminId,
-              operationId: 3,
-            }
-          });
-        }
-        if (req.originalUrl === '/api/permission' && req.method === 'POST' && res.statusCode === 200) {
-          const adminId = Number(req.user);
-          await prisma.logs.create({
-            data: {
-              userId: Number(body.id),
-              adminId: adminId,
-              operationId: 4,
-            }
-          });
-        }
-        if (req.originalUrl.match(userUpdateUrl) && req.method === 'PUT' && res.statusCode === 200) {
-          const adminId = Number(req.user);
-          await prisma.logs.create({
-            data: {
-              userId: Number(body.id),
-              adminId: adminId,
-              operationId: 6,
-            }
-          });
+        
+        if (res.statusCode === 200 && req.method === 'POST') {
+          if (req.originalUrl === '/api/user') {
+            console.log(body);
+            const adminId = Number(req.user);
+            await prisma.logs.create({
+              data: {
+                userId: Number(body.id),
+                adminId: adminId,
+                operationId: 1,
+              }
+            });
+          }
+          
+          if (req.originalUrl === '/api/user-sids') {
+            console.log(body);
+            const adminId = Number(req.user);
+            await prisma.logs.create({
+              data: {
+                userId: Number(body.id),
+                adminId: adminId,
+                operationId: 3,
+              }
+            });
+          }
+          
+          if (req.originalUrl === '/api/permission') {
+            console.log(body);
+            const adminId = Number(req.user);
+            const userId = Number(body.userId);
+            await prisma.logs.create({
+              data: {
+                userId: userId,
+                adminId: adminId,
+                operationId: 4,
+              }
+            });
+          }
+          
+        } else if (res.statusCode === 200 && req.method === 'DELETE') {
+          if (userUpdateUrl.test(req.originalUrl)) {
+            console.log(body);
+            const adminId = Number(req.user);
+            await prisma.logs.create({
+              data: {
+                userId: Number(body.id),
+                adminId: adminId,
+                operationId: 2,
+              }
+            });
+          }
+        } else if (res.statusCode === 200 && req.method === 'PUT') {
+          if (userUpdateUrl.test(req.originalUrl)) {
+            console.log(body);
+            const adminId = Number(req.user);
+            await prisma.logs.create({
+              data: {
+                userId: Number(body.user.id),
+                adminId: adminId,
+                operationId: 6,
+              }
+            });
+          } 
+          if (req.originalUrl === '/api/user-sids') {
+            console.log(body);
+            const adminId = Number(req.user);
+            await prisma.logs.create({
+              data: {
+                userId: Number(body.id),
+                adminId: adminId,
+                operationId: 5,
+              }
+            });
+          }
         }
       } catch (error) {
         console.error('Error logging:', error);

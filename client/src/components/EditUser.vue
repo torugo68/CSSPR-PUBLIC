@@ -250,28 +250,52 @@
 
     setTimeout(async () => {
       try {
-        const userData = JSON.stringify({
-          name: values.name,
-          email: values.email,
-          roleId: roles.value.find(role => role.name === values.role).id,
-          departmentId: departments.value.find(department => department.name === values.department).id,
-        });
-
-        await axios.put(`http://localhost:3001/api/user/${props.userId}`, userData, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
+        let userData = { } 
+        if (oldUserData.value.name !== values.name) {
+          userData = {
+            ...userData,
+            name: values.name
           }
-        });
-
-        await axios.delete(`http://localhost:3001/api/permission/${props.userId}`, { withCredentials: true })
+        }
+        if (oldUserData.value.email !== values.email) {
+          userData = {
+            ...userData,
+            email: values.email
+          }
+        }
+        if (oldUserData.value.roleId !== roles.value.find(role => role.name === values.role).id) {
+          userData = {
+            ...userData,
+            roleId: roles.value.find(role => role.name === values.role).id
+          }
+        }
+        if (oldUserData.value.departmentId !== departments.value.find(department => department.name === values.department).id) {
+          userData = {
+            ...userData,
+            departmentId: departments.value.find(department => department.name === values.department).id
+          }
+        }
+        if (Object.keys(userData).length > 0) {
+          await axios.put(`http://localhost:3001/api/user/${props.userId}`, userData, {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+        }
         
-        if (selectedSystems.value && selectedSystems.value.value && selectedSystems.value.value.length > 1)
-        {
-          for (let i = 1; i < selectedSystems.value.value.length; i++) {
+        for (let i = 0; i < systems.value.length; i++) {
+          if (oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && !selectedSystems.value.value.includes(systems.value[i].name)) {
+            let permissionId = oldUserData.value.permissions.find(permission => permission.systemId === systems.value[i].id).id;
+            console.log(permissionId)
+            await axios.delete(`http://localhost:3001/api/permission/${permissionId}`, { withCredentials: true })
+            .catch(error => {
+              console.log('Usuário foi criado, porém não foi possivel remover as permissões.');
+            });
+          } else if (!oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && selectedSystems.value.value.includes(systems.value[i].name)) {
             let newPermission = {
               userId: props.userId,
-              systemId: Number(systems.value.find(system => system.name === selectedSystems.value.value[i]).id),
+              systemId: systems.value[i].id,
             }
             await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
             .catch(error => {
@@ -320,7 +344,7 @@
       } catch (error) {
         loading.value = false;
         toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email');
-        console.error('Error saving user');
+        console.error('Error saving user', error);
       }
 
       loading.value = false;
