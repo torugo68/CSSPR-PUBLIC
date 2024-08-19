@@ -13,6 +13,7 @@ async function main() {
     { name: "Setor criado" },
     { name: "Grupo criado" },
     { name: "Setor Atualizado" },
+    { name: "Grupo Atualizado" },
   ]
 
   const departments = [

@@ -287,7 +287,6 @@
         for (let i = 0; i < systems.value.length; i++) {
           if (oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && !selectedSystems.value.value.includes(systems.value[i].name)) {
             let permissionId = oldUserData.value.permissions.find(permission => permission.systemId === systems.value[i].id).id;
-            console.log(permissionId)
             await axios.delete(`http://localhost:3001/api/permission/${permissionId}`, { withCredentials: true })
             .catch(error => {
               console.log('Usuário foi criado, porém não foi possivel remover as permissões.');
@@ -344,7 +343,7 @@
       } catch (error) {
         loading.value = false;
         toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email');
-        console.error('Error saving user', error);
+        console.error('Error saving user');
       }
 
       loading.value = false;

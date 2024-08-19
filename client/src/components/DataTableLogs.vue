@@ -2,8 +2,8 @@
     <v-data-table
       class="data-table"
       :headers="headers"
-      :items="logs.value"
-      :sort-by="[{ key: 'email', order: 'asc' }]"
+      :items="filteredLogs"
+      :sort-by="[{ key: 'date', order: 'desc' }]"
       v-if="!loading"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
     >
@@ -58,7 +58,7 @@
     </template>
 
 <script setup>
-  import { ref, reactive, watch, onMounted, nextTick, computed } from 'vue';
+  import { ref, reactive, watch, onMounted, computed } from 'vue';
   import axios from 'axios';
   
   import toastr from 'toastr';
@@ -74,17 +74,13 @@
           sortable: false,
           key: 'name',
         },
-        { title: 'Email do Usuário', key: 'user.email', sortable: false },
-        { title: 'Grupo do Usuário', key: 'roleId', sortable: false },
+        { title: 'Email do Usuário', key: 'email', sortable: false },
+        { title: 'Grupo do Usuário', key: 'role', sortable: false },
+        { title: 'Tipo da Operação', key: 'operation', sortable: false },
         { title: 'Data da Operação', key: 'date' },
-        { title: 'Administrador', key: 'admins'},
+        { title: 'Administrador', key: 'admin'},
     ];
-    const defaultItem = {
-        name: '',
-        email: '',
-        roleId: -1,
-        departmentId: -1,
-    };
+    
     const id = ref(1);
     
     const logs = ref([]);
@@ -92,11 +88,15 @@
     const searchQuery = ref('');
   
     const filteredLogs = computed(() => {
-        const query = searchQuery.value.toLowerCase();
-        return logs.value.filter(user => 
-            user.name.toLowerCase().includes(query) || 
-            user.email.toLowerCase().includes(query)
-        );
+      const query = searchQuery.value.toLowerCase();
+      return logs.value
+        .filter(log => 
+          log && log.name && log.email && (
+            log.name.toLowerCase().includes(query) || 
+            log.email.toLowerCase().includes(query)
+          )
+        )
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
     });
 
     watch(dialog, (val) => {
@@ -115,20 +115,44 @@
 
     function close() {
     dialog.value = false;
-    nextTick(() => {
-        Object.assign(editedItem, defaultItem);
-        editedIndex.value = -1;
-    });
+    }
+
+    function formatDate(isoDate) {
+      const date = new Date(isoDate);
+      return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'UTC'
+      }).format(date);
     }
 
     async function fetchData() {
         try {
-            const logsInfo = await axios.get('http://localhost:3001/api/logs', { withCredentials: true });
+            await axios.get('http://localhost:3001/api/logs', { withCredentials: true })
+            .then((response) => {
+              const logsInfo = response.data.map(log => {
+                if (log.user) {
+                  return {
+                    admin: log.admin.username,
+                    name: log.user.name,
+                    email: log.user.email,
+                    role: log.user.role.name,
+                    department: log.user.department.name,
+                    date: formatDate(log.createdAt),
+                    operation: log.operation.name,
+                  }
+                }
+              });
+                logs.value = logsInfo;
+            });
 
-            console.log(logsInfo)
-            logs.value = logsInfo;
         } catch (error) {
-            console.error("Error fetching data");
+            console.error("Error fetching data", error);
         }
     }
   </script>

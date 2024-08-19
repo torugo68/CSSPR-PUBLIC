@@ -19,10 +19,10 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
       try {
         const userUpdateUrl = /^\/api\/user\/(\d+)$/;
         const userSidsUpdateUrl = /^\/api\/user-sids\/(\d+)$/;
+        const userPermissionUpdateUrl = /^\/api\/permission\/(\d+)$/;
         
         if (res.statusCode === 200 && req.method === 'POST') {
           if (req.originalUrl === '/api/user') {
-            console.log(body);
             const adminId = Number(req.user);
             await prisma.logs.create({
               data: {
@@ -34,11 +34,10 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
           }
           
           if (req.originalUrl === '/api/user-sids') {
-            console.log(body);
             const adminId = Number(req.user);
             await prisma.logs.create({
               data: {
-                userId: Number(body.id),
+                userId: Number(body.userId),
                 adminId: adminId,
                 operationId: 3,
               }
@@ -46,7 +45,6 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
           }
           
           if (req.originalUrl === '/api/permission') {
-            console.log(body);
             const adminId = Number(req.user);
             const userId = Number(body.userId);
             await prisma.logs.create({
@@ -60,7 +58,6 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
           
         } else if (res.statusCode === 200 && req.method === 'DELETE') {
           if (userUpdateUrl.test(req.originalUrl)) {
-            console.log(body);
             const adminId = Number(req.user);
             await prisma.logs.create({
               data: {
@@ -70,24 +67,58 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
               }
             });
           }
-        } else if (res.statusCode === 200 && req.method === 'PUT') {
-          if (userUpdateUrl.test(req.originalUrl)) {
-            console.log(body);
+
+          if (userPermissionUpdateUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
+            const userId = Number(body.userId);
             await prisma.logs.create({
               data: {
-                userId: Number(body.user.id),
+                userId: userId,
                 adminId: adminId,
-                operationId: 6,
+                operationId: 4,
               }
             });
+          }
+        } else if (res.statusCode === 200 && req.method === 'PUT') {
+          if (userUpdateUrl.test(req.originalUrl)) {
+            const adminId = Number(req.user);
+
+            if (body.actions.nameEdited || body.actions.emailEdited) {
+              await prisma.logs.create({
+                data: {
+                  userId: Number(body.user.id),
+                  adminId: adminId,
+                  operationId: 6,
+                }
+              });
+            }
+
+            if (body.actions.roleIdEdited) {
+              await prisma.logs.create({
+                data: {
+                  userId: Number(body.user.id),
+                  adminId: adminId,
+                  operationId: 9,
+                }
+              });
+            }
+
+            if (body.actions.departmentIdEdited) {
+              await prisma.logs.create({
+                data: {
+                  userId: Number(body.user.id),
+                  adminId: adminId,
+                  operationId: 10,
+                }
+              });
+            }
+
           } 
-          if (req.originalUrl === '/api/user-sids') {
-            console.log(body);
+          if (userSidsUpdateUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
             await prisma.logs.create({
               data: {
-                userId: Number(body.id),
+                userId: Number(body.userId),
                 adminId: adminId,
                 operationId: 5,
               }

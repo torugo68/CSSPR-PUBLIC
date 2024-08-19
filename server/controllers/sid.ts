@@ -97,3 +97,28 @@ export const findAll = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Error on find sids." });
     }
 };
+
+export const check = async (req: Request, res: Response) => {
+    try {
+        const sidId = parseInt(req.params.id, 10);
+
+        if (isNaN(sidId)) {
+            res.status(400).send('Invalid role ID');
+            return;
+        }
+          
+        const check = await prisma.userSids.findFirst({
+            where: {
+                sidId: sidId
+            }
+        });
+
+        if (check) {
+            res.status(501).json({ message: "Cannot delete sid." });
+        } else {
+            res.status(200).json({ message: "Sid can be deleted." });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error on check." });
+    }
+};

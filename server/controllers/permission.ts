@@ -32,10 +32,10 @@ export const remove = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
 
-        await prisma.permission.delete({
+        const response = await prisma.permission.delete({
             where : { id: id } 
         });
-        res.status(200).json({ message: "Permissions deleted successfully." });
+        res.status(200).json(response);
     } catch (e) {
         res.status(500).json({ message: "Error on delete permissions." });
     }

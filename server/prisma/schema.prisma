@@ -12,8 +12,8 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String       @unique
   name         String
-  department    Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  role         Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  department    Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade)
+  role         Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade)
   departmentId Int?
   roleId       Int?
   permissions  Permission[]
@@ -51,7 +51,6 @@ model Department {
 model System {
   id         Int          @id @default(autoincrement())
   name       String       @unique
-  deletedAt  DateTime?
   Permission Permission[]
 }
 

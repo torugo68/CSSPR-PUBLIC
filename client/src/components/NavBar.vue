@@ -90,7 +90,7 @@ export default {
 
 <style scoped>
 .custom-link {
-  color: inherit; /* Inherit color from parent */
-  text-decoration: none; /* Remove underline */
+  color: inherit; 
+  text-decoration: none;
 }
 </style>

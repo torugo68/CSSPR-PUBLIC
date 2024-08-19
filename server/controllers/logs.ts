@@ -23,17 +23,30 @@ export const findAll = async (req: Request, res: Response) => {
                 include: {
                     user: {
                         select: {
-                            id: true,
                             name: true,
                             email: true,
+                            role: {
+                                select: {
+                                    name: true,
+                                }
+                            },
+                            department: {
+                                select: {
+                                    name: true,
+                                }
+                            }
                         }
                     },
                     admin: {
                         select: {
-                            id: true,
                             username: true,
                         }
                     },
+                    operation: {
+                        select: {
+                          name: true,
+                        }
+                      }
                 }
             }
         );

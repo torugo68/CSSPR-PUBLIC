@@ -82,3 +82,28 @@ export const findAll = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Error on find systems." });
     }
 };
+
+export const check = async (req: Request, res: Response) => {
+    try {
+        const systemId = parseInt(req.params.id, 10);
+
+        if (isNaN(systemId)) {
+            res.status(400).send('Invalid role ID');
+            return;
+        }
+          
+        const check = await prisma.permission.findFirst({
+            where: {
+                systemId: systemId
+            }
+        });
+
+        if (check) {
+            res.status(501).json({ message: "Cannot delete system." });
+        } else {
+            res.status(200).json({ message: "System can be deleted." });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error on check." });
+    }
+};

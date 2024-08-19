@@ -17,16 +17,16 @@ let isAuthenticated = false;
 
 router.beforeEach(async (to, from, next) => {
   try {
+    if (to.path === '/error/internal') {
+      next();
+      return;
+    }
+
     const response = await fetch('http://localhost:3001/api/auth', {
       method: 'GET',
       credentials: 'include'
     });
     isAuthenticated = response.ok;
-
-    if (to.path === '/error/internal') {
-      next();
-      return;
-    }
 
     if (to.path === '/login' && isAuthenticated) {
       next({ path: '/' });

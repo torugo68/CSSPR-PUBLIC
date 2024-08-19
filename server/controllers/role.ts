@@ -92,3 +92,28 @@ export const findAll = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Error on find roles." });
     }
 };
+
+export const check = async (req: Request, res: Response) => {
+    try {
+        const roleId = parseInt(req.params.id, 10);
+
+        if (isNaN(roleId)) {
+            res.status(400).send('Invalid role ID');
+            return;
+        }
+          
+        const check = await prisma.user.findFirst({
+            where: {
+                roleId: roleId
+            }
+        });
+
+        if (check) {
+            res.status(501).json({ message: "Cannot delete role." });
+        } else {
+            res.status(200).json({ message: "Role can be deleted." });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error on check." });
+    }
+};

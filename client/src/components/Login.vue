@@ -71,7 +71,6 @@
               }
             })
             .catch(error => {
-              console.error("ERR CATCH");
               this.loading = false;
               toastr.error('Usuário ou senha inválidos');
             });

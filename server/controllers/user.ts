@@ -114,11 +114,12 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
     try {
-        await prisma.user.update({
+        
+        const user = await prisma.user.update({
             where: { id: Number(req.params.id) },
             data: { deletedAt: new Date() }
         });
-        res.status(200).json({ message: "User removed successfully." }); 
+        res.status(200).json(user); 
     } catch (e) {
         res.status(500).json({ message: "Error on removing user." });
     }
@@ -177,22 +178,13 @@ export const findOne = async (req: Request, res: Response) => {
 }
 
 interface UserQuery {
-    name?: { contains: string };
-    email?: { contains: string };
+    query?: string;
 }
 
 export const findAll = async (req: Request, res: Response) => {
     try {
-        let { name, email, count } = req.query;
+        let { query, count } = req.query;
 
-        let query: UserQuery = {};
-        if (name) {
-            query['name'] = { contains: name as string };
-        }
-        if (email) {
-            query['email'] = { contains: email as string };
-        }
-        
         let parsedCount = 25;
 
         if (count) {
@@ -205,8 +197,15 @@ export const findAll = async (req: Request, res: Response) => {
 
         const users = await prisma.user.findMany({
             where: {
-                ...query,
-                deletedAt: null
+                AND: [
+                    {
+                        OR: [
+                            query ? { name: { contains: query as string } } : {},
+                            query ? { email: { contains: query as string } } : {}
+                        ]
+                    },
+                    { deletedAt: null }
+                ]
             },
             take: parsedCount,
             include: {
