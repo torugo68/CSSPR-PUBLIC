@@ -8,7 +8,7 @@
   > 
   <template v-slot:top>
     <div class="d-flex align-items-center mb-3 mt-5">
-        <h5><span class="me-1 ml-2">Adicionar novo {{headers[0].title}}</span></h5>
+        <h5><span class="me-1 ml-2">Adicionar novo {{ headers[0].title }}</span></h5>
         <v-icon small  class="ml-1" @click="toggleCreateDialog">mdi-plus-circle</v-icon>
     </div>
     <v-dialog v-model="dialogCreate" style="max-width:420px; min-width: none;">
@@ -24,7 +24,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue-darken-1" variant="text" @click="toggleDeleteDialog">Cancelar</v-btn>
-          <v-btn color="red-darken-3" variant="text" @click="deleteItemConfirm(item)" :disabled="!allowedToDelete">Confirmar</v-btn>
+          <v-btn color="red-darken-3" variant="text" :loading="loadingDelete" :disabled="!allowedToDelete" @click="confirmDelete()">Confirmar</v-btn>
           <v-spacer></v-spacer>
         </v-card-actions>
       </v-card>
@@ -49,12 +49,11 @@
   </template>
 
 <script setup> 
-import { ref, onMounted, defineProps, defineEmits } from 'vue';
+import { ref, onMounted, defineProps } from 'vue';
 import axios from 'axios';
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
-import { id } from 'vuetify/locale';
 
 const props = defineProps({
   parentData: {
@@ -69,15 +68,16 @@ const props = defineProps({
 });
 
 const headers = [
-        {
-          title: 'Nome',
-          align: 'start',
-          key: 'name',
-        },
-        { title: 'Ações', key: 'actions'},
-    ];
+  {
+    title: 'Nome',
+    align: 'start',
+    key: 'name',
+  },
+  { title: 'Ações', key: 'actions'},
+];
 
 const loading = ref(false);
+const loadingDelete = ref(false);
 const items = ref([]);
 const tab = ref(props.parentData);
 const allowedToDelete = ref(false);
@@ -89,20 +89,32 @@ const dialogCreate = ref(false);
 const dialogDelete = ref(false);
 const dialogEdit = ref(false);
 
-if (props.parentData === 1) {
-  fetch = 'http://localhost:3001/api/department';
-  headers[0].title = 'Setor';
-} else if (props.parentData === 2) {
-  fetch = 'http://localhost:3001/api/role';
-  headers[0].title = 'Grupo';
-} else if (props.parentData === 3) {
-  fetch = 'http://localhost:3001/api/system';
-  headers[0].title = 'Sistema';
-} else if (props.parentData === 4) {
-  fetch = 'http://localhost:3001/api/sid';
-  headers[0].title = 'Termo';
+switch (props.parentData) {
+  case 0:
+    fetch = 'http://localhost:3001/api/admin';
+    headers[0].title = 'Admin';
+    break;
+  case 1:
+    fetch = 'http://localhost:3001/api/department';
+    headers[0].title = 'Setor';
+    break;
+  case 2:
+    fetch = 'http://localhost:3001/api/role';
+    headers[0].title = 'Grupo';
+    break;
+  case 3:
+    fetch = 'http://localhost:3001/api/system';
+    headers[0].title = 'Sistema';
+    break;
+  case 4:
+    fetch = 'http://localhost:3001/api/sid';
+    headers[0].title = 'Termo';
+    break;
+  default:
+    fetch = 'http://localhost:3001/api/department';
+    headers[0].title = 'Setor';
+    break;
 }
-
 
 function toggleCreateDialog() {
   fetchData();
@@ -111,7 +123,7 @@ function toggleCreateDialog() {
 
 function toggleEditDialog() {
   fetchData();
-  dialogEdit.value = false;
+  dialogEdit.value = !dialogEdit.value;
 }
 
 function editItem(item) {
@@ -125,21 +137,28 @@ function deleteItem(item) {
 }
 
 function toggleDeleteDialog() {
+  fetchData();
   dialogDelete.value = !dialogDelete.value;
 }
 
-async function deleteItemConfirm() {
-  await axios.delete(`${fetch}/${currentDeleteItem.value}`, { withCredentials: true })
+const confirmDelete = () => {
+  loadingDelete.value = true;
+  console.log('deleting', currentDeleteItem.value);
+  axios.delete(`${fetch}/${currentDeleteItem.value}`, { withCredentials: true })
     .then(() => {
-      toastr.success(`${headers[0].title} deletado com sucesso`);
+      toastr.success(`${headers[0].title} deletado com sucesso!`);
       fetchData();
       dialogDelete.value = false;
+      loadingDelete.value = false;
     }).catch((error) => {
-      toastr.error(`Erro ao deletar ${headers[0].title}`);
-      fetchData();
-      dialogDelete.value = false;
+      toastr.error('Erro ao deletar o item');
+      loadingDelete.value = false;
     });
-}
+  
+    loadingDelete.value = false;
+    toastr.success(`${headers[0].title} deletado com sucesso!`);
+    toggleDeleteDialog()
+  };
 
 async function checkIfCanDelete(id) {
   await axios.get(`${fetch}/check/${id}`, { withCredentials: true })

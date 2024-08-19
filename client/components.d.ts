@@ -8,8 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AdminRoleOrDepartment: typeof import('./src/components/AdminRoleOrDepartment.vue')['default']
-    CreateDepartment: typeof import('./src/components/CreateDepartment.vue')['default']
-    CreateRole: typeof import('./src/components/CreateRole.vue')['default']
     CreateRoleOrDepartment: typeof import('./src/components/CreateRoleOrDepartment.vue')['default']
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
     DataTableLogs: typeof import('./src/components/DataTableLogs.vue')['default']
@@ -22,6 +20,5 @@ declare module 'vue' {
     NavBar: typeof import('./src/components/NavBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    ViewUser: typeof import('./src/components/ViewUser.vue')['default']
   }
 }

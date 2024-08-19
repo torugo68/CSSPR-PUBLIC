@@ -71,7 +71,6 @@ export default {
     tab: '/',
     items: [
       { title: 'Admin', icon: 'mdi-lock', url: '/admin/' },
-      { title: 'Opções', icon: 'mdi-cog',  url: '/settings/'},
       { title: 'Sair', icon: 'mdi-logout', url: '/logout/' },
     ],
   }),

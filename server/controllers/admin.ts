@@ -44,6 +44,7 @@ export const update = async (req: Request, res: Response) => {
             where: { id: Number(req.params.id) },
             data: {
                 username: validatedData.data.username,
+                ...(validatedData.data.password && { password: bcrypt.hashSync(validatedData.data.password, 10) })
             }
         });
         res.status(200).json(admin);
@@ -59,9 +60,8 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
     try {
-        await prisma.admin.update({
+        await prisma.admin.delete({
             where: {id: Number(req.params.id)},
-            data: { deletedAt: new Date() }
         });
     } catch (e) {
         res.status(500).json({message: "Error on removing admin."});
@@ -81,9 +81,19 @@ export const restore = async (req: Request, res: Response) => {
 export const findOne = async (req: Request, res: Response) => {
     try {
         const admin = await prisma.admin.findUnique({
-            where: {id: Number(req.params.id)}
+            where: {id: Number(req.params.id)},
+            select: {
+                id: true,
+                username: true
+            }
         });
-        res.status(200).json(admin);
+        
+        const adminWithName = {
+            id : admin?.id,
+            name: admin?.username
+        };
+
+        res.status(200).json(adminWithName);
     } catch (e) {
         res.status(500).json({message: "Error on find admin."});
     }
@@ -103,11 +113,45 @@ export const findAll = async (req: Request, res: Response) => {
         }
 
         const admins = await prisma.admin.findMany({
-            where: query
+            where: query,
+            select: {
+                id: true,
+                username: true
+            }
         });
 
-        res.status(200).json(admins);
+        const adminsWithName = admins.map(admin => ({
+            id : admin.id,
+            name: admin.username
+        }));
+
+        res.status(200).json(adminsWithName);
     } catch (e) {
         res.status(500).json({ message: "Error on find admins." });
+    }
+};
+
+export const check = async (req: Request, res: Response) => {
+    try {
+        const adminId = parseInt(req.params.id, 10);
+
+        if (isNaN(adminId)) {
+            res.status(400).send('Invalid role ID');
+            return;
+        }
+
+        const check = await prisma.logs.findFirst({
+            where: {
+                adminId: adminId
+            }
+        });
+
+        if (check) {
+            res.status(501).json({ message: "Cannot delete admin." });
+        } else {
+            res.status(200).json({ message: "Admin can be deleted." });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error on check." });
     }
 };

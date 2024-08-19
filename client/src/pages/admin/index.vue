@@ -48,7 +48,7 @@
           </v-navigation-drawer>
           <v-main class="fill-height">
             <v-container class="justify-center fill-height">
-              <div v-if="tab === 0">PARA SER IMPLEMENTADO...</div>
+              <admin-role-or-department v-if="tab === 0" :parentData="tab"></admin-role-or-department>
               <admin-role-or-department v-if="tab === 1" :parentData="tab"></admin-role-or-department>
               <admin-role-or-department v-if="tab === 2" :parentData="tab"></admin-role-or-department>
               <admin-role-or-department v-if="tab === 3" :parentData="tab"></admin-role-or-department>
@@ -66,7 +66,7 @@
   
   const router = useRouter();
 
-  const tab = ref(1);
+  const tab = ref(0);
   function changeTab(value) {
     tab.value = value;
   }
