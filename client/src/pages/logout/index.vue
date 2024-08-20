@@ -1,4 +1,6 @@
 <script>
+import { globalState } from '../../globalState';
+
 export default {
     data() {
         return {
@@ -6,7 +8,7 @@ export default {
         };
     },
     created() {
-        fetch('http://localhost:3001/api/auth/logout', {
+        fetch(`${globalState.apiUrl.value}/api/auth/logout`, {
             method: 'GET',
             credentials: 'include',
             headers: {

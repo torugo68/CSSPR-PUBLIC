@@ -27,6 +27,7 @@ npm run dev
 ### Building for Production
 
 To build your project for production, use:
+(config api url in globalState.ts )
 
 ```bash
 npm run build

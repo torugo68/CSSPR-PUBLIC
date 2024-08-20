@@ -91,6 +91,8 @@
   import { ref, reactive, watch, onMounted, nextTick, computed } from 'vue';
   import axios from 'axios';
   
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
@@ -200,16 +202,16 @@
     users.value.splice(editedIndex.value, 1);
     const userId = usersData.value.find(user => user.email === editedItem.email).id;
     try {
-      await axios.delete(`http://localhost:3001/api/user/${userId}`, {
+      await axios.delete(`${globalState.apiUrl.value}/api/user/${userId}`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
       });
       usersData.value = usersData.value.filter(user => user.id !== userId);
-      toastr.success('Usuário deletado com sucesso!');
+      toastr.success('Usuário deletado com sucesso!', null, { timeOut: 350 });
     } catch (error) {
-      toastr.error('Erro ao deletar usuário');
+      toastr.error('Erro ao deletar usuário', null, { timeOut: 350 });
     }
     closeDelete();
   }
@@ -233,14 +235,14 @@
   
   async function fetchData() {
     try {
-      const users = await axios.get('http://localhost:3001/api/user', {
+      const users = await axios.get(`${globalState.apiUrl.value}/api/user`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
       });
 
-      await axios.get('http://localhost:3001/api/role', { withCredentials: true })
+      await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
       .then(response => {
         roles.value = response.data;
       })
@@ -248,7 +250,7 @@
         console.error('Error fetching roles:');
       });
       
-      await axios.get('http://localhost:3001/api/department', { withCredentials: true })
+      await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
         .then(response => {
           departments.value = response.data;
         })

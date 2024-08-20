@@ -114,6 +114,8 @@
   import validator from 'validator';
   import axios from 'axios';
 
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
 
@@ -247,7 +249,7 @@
               }
             }
 
-            await axios.post('http://localhost:3001/api/user', userData, {
+            await axios.post(`${globalState.apiUrl.value}/api/user`, userData, {
               withCredentials: true,
               headers: {
                 'Content-Type': 'application/json'
@@ -255,22 +257,22 @@
             })
             .then(response => {
               loading.value = false;
-              toastr.success('Usuário criado com sucesso');
+              toastr.success('Usuário criado com sucesso', null, { timeOut: 350 });
               emitValue(response.data);
             }).catch(e => {
               loading.value = false;
-              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
+              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
             });
           } catch (e) {
             loading.value = false;
-            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email');
+            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
           }
         }, 1000);
     });
 
   onMounted(async () => {
     try {
-      await axios.get('http://localhost:3001/api/system', {
+      await axios.get(`${globalState.apiUrl.value}/api/system`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -279,7 +281,7 @@
         systems.value = response.data;
       });
       
-      axios.get('http://localhost:3001/api/role', { withCredentials: true })
+      axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
       .then(response => {
         roles.value = response.data;
       })
@@ -287,7 +289,7 @@
         console.error('Error fetching roles');
       });
       
-      axios.get('http://localhost:3001/api/department', { withCredentials: true })
+      axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
         .then(response => {
           departments.value = response.data;
         })

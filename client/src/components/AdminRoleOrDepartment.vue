@@ -55,6 +55,8 @@ import axios from 'axios';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 
+import { globalState } from '../globalState';
+
 const props = defineProps({
   parentData: {
     type: Number,
@@ -90,29 +92,27 @@ const dialogDelete = ref(false);
 const dialogEdit = ref(false);
 
 switch (props.parentData) {
-  case 0:
-    fetch = 'http://localhost:3001/api/admin';
+  case 0: 
+    fetch = `${globalState.apiUrl.value}/api/admin`;
     headers[0].title = 'Admin';
     break;
   case 1:
-    fetch = 'http://localhost:3001/api/department';
+    fetch = `${globalState.apiUrl.value}/api/department`;
     headers[0].title = 'Setor';
     break;
   case 2:
-    fetch = 'http://localhost:3001/api/role';
+    fetch = `${globalState.apiUrl.value}/api/role`;
     headers[0].title = 'Grupo';
     break;
   case 3:
-    fetch = 'http://localhost:3001/api/system';
+    fetch = `${globalState.apiUrl.value}/api/system`;
     headers[0].title = 'Sistema';
     break;
   case 4:
-    fetch = 'http://localhost:3001/api/sid';
+    fetch = `${globalState.apiUrl.value}/api/sid`;
     headers[0].title = 'Termo';
     break;
   default:
-    fetch = 'http://localhost:3001/api/department';
-    headers[0].title = 'Setor';
     break;
 }
 
@@ -146,17 +146,17 @@ const confirmDelete = () => {
   console.log('deleting', currentDeleteItem.value);
   axios.delete(`${fetch}/${currentDeleteItem.value}`, { withCredentials: true })
     .then(() => {
-      toastr.success(`${headers[0].title} deletado com sucesso!`);
+      toastr.success(`${headers[0].title} deletado com sucesso!`, null, { timeOut: 350 });
       fetchData();
       dialogDelete.value = false;
       loadingDelete.value = false;
     }).catch((error) => {
-      toastr.error('Erro ao deletar o item');
+      toastr.error('Erro ao deletar o item', null, { timeOut: 350 });
       loadingDelete.value = false;
     });
   
     loadingDelete.value = false;
-    toastr.success(`${headers[0].title} deletado com sucesso!`);
+    toastr.success(`${headers[0].title} deletado com sucesso!`, null, { timeOut: 350 });
     toggleDeleteDialog()
   };
 

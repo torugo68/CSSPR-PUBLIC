@@ -32,9 +32,12 @@
 </template>
 
 <script>
+  import axios from 'axios';
+
+  import { globalState } from '../globalState.ts';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-  import axios from 'axios';
 
   export default {
     data: () => ({
@@ -53,7 +56,7 @@
                 password: this.password
             });
 
-            await axios.post('http://localhost:3001/api/auth/login', loginData, {
+            await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
               withCredentials: true,
               headers: {
                 'Content-Type': 'application/json'

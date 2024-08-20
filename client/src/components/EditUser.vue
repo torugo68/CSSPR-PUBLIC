@@ -119,7 +119,7 @@
                               ></v-text-field>
                             </v-col>
                             <v-col cols="auto" class="d-flex align-center">
-                              <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                              <v-icon small @click="toggleActivation(index)" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
                             </v-col>
                           </v-row>
                         </v-col>
@@ -169,6 +169,8 @@
   import { useField, useForm } from 'vee-validate'
   import validator from 'validator';
   
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
@@ -276,7 +278,7 @@
           }
         }
         if (Object.keys(userData).length > 0) {
-          await axios.put(`http://localhost:3001/api/user/${props.userId}`, userData, {
+          await axios.put(`${globalState.apiUrl.value}/api/user/${props.userId}`, userData, {
             withCredentials: true,
             headers: {
               'Content-Type': 'application/json'
@@ -287,7 +289,7 @@
         for (let i = 0; i < systems.value.length; i++) {
           if (oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && !selectedSystems.value.value.includes(systems.value[i].name)) {
             let permissionId = oldUserData.value.permissions.find(permission => permission.systemId === systems.value[i].id).id;
-            await axios.delete(`http://localhost:3001/api/permission/${permissionId}`, { withCredentials: true })
+            await axios.delete(`${globalState.apiUrl.value}/api/permission/${permissionId}`, { withCredentials: true })
             .catch(error => {
               console.log('Usuário foi criado, porém não foi possivel remover as permissões.');
             });
@@ -296,7 +298,7 @@
               userId: props.userId,
               systemId: systems.value[i].id,
             }
-            await axios.post('http://localhost:3001/api/permission', newPermission, { withCredentials: true })
+            await axios.post(`${globalState.apiUrl.value}/api/permission`, newPermission, { withCredentials: true })
             .catch(error => {
               console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
             });
@@ -311,7 +313,7 @@
               sidId: sids.value[i].sidId,
               value: sids.value[i].value
             }
-            await axios.put(`http://localhost:3001/api/user-sids/${sids.value[i].id}`, newSid, { withCredentials: true })
+            await axios.put(`${globalState.apiUrl.value}/api/user-sids/${sids.value[i].id}`, newSid, { withCredentials: true })
               .catch(error => {
                 console.log('Usuário foi salvo, porém não foi possivel atualizar os sids.');
               });
@@ -326,23 +328,23 @@
                 value: sids.value[i].value
               }
 
-              await axios.post('http://localhost:3001/api/user-sids', newSid, { withCredentials: true })
+              await axios.post(`${globalState.apiUrl.value}/api/user-sids`, newSid, { withCredentials: true })
             }
           }
         } catch (error) {
           console.error('Error saving sids');
         }
 
-        await axios.get(`http://localhost:3001/api/user/${props.userId}`, { withCredentials: true })
+        await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
         .then(response => {
           emitEditedUser(response.data);
         });
 
-        toastr.success('Usuário salvo com sucesso.');
+        toastr.success('Usuário salvo com sucesso.', null, { timeOut: 350 });
         emitValue(true);  
       } catch (error) {
         loading.value = false;
-        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email');
+        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
         console.error('Error saving user');
       }
 
@@ -354,7 +356,7 @@
     loadingComponent.value = true;
     setTimeout(async () => {
       try {
-        await axios.get('http://localhost:3001/api/system', {
+        await axios.get(`${globalState.apiUrl.value}/api/system`, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
@@ -363,7 +365,7 @@
           systems.value = response.data;
         });
         
-        await axios.get('http://localhost:3001/api/role', { withCredentials: true })
+        await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
         .then(response => {
           roles.value = response.data;
         })
@@ -371,7 +373,7 @@
           console.error('Error fetching roles');
         });
         
-        await axios.get('http://localhost:3001/api/department', { withCredentials: true })
+        await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
           .then(response => {
             departments.value = response.data;
           })
@@ -379,12 +381,12 @@
             console.error('Error fetching departments');
           });
 
-        await axios.get(`http://localhost:3001/api/sid`, { withCredentials: true })
+        await axios.get(`${globalState.apiUrl.value}/api/sid`, { withCredentials: true })
         .then(response => {
           allSids.value = response.data;
         });
 
-        await axios.get(`http://localhost:3001/api/user/${props.userId}`, { withCredentials: true })
+        await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
         .then(response => {
             oldUserData.value = response.data;
             name.value.value = response.data.name
@@ -483,7 +485,7 @@
       .filter(item => !sids.value.map(item => item.sid.name).includes(item))[0];
       const firstAvailableId = allSids.value.find(item => item.name === firstAvailableName)?.id;
       if (!firstAvailableName || !firstAvailableId) {
-        return toastr.error('Todos os termos já foram adicionados.');
+        return toastr.error('Todos os termos já foram adicionados.', null, { timeOut: 350 });
       }
 
       return sids.value.push({

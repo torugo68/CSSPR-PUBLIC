@@ -62,6 +62,8 @@
   import { ref, reactive, watch, onMounted, computed } from 'vue';
   import axios from 'axios';
   
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
@@ -108,7 +110,7 @@
             if (query.value) {
                 searching.value = true;
                 setTimeout(async () => {
-                    const response = await axios.get(`http://localhost:3001/api/user?query=${query.value}`, { withCredentials: true });
+                    const response = await axios.get(`${globalState.apiUrl.value}/api/user?query=${query.value}`, { withCredentials: true });
                     const userInfo = response.data.map(user => {
                         return {
                             id: user.id,

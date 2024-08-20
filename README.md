@@ -64,12 +64,34 @@ Seed database with sample data:
 $ npx ts-node prisma/seed.ts
 ```
 
+Config .env: 
+```sh
+# .env file (example)
+PORT=3001
+HOST=localhost
+
+SESSION_SECRET=secret
+
+NODE_ENV=production
+```
+
 ## Usage
 
 ### Serving the server in development mode
 
 ```sh
 $ npx nodemon server.ts
+```
+
+The server will be accessible at [http://localhost:3001](http://localhost:3001) (change port on server.ts)
+
+
+### Serving the server in production
+
+```sh
+$ npm install -g pm2
+$ npx tsc
+$ pm2 start dist/server.js --name "csspr"
 ```
 
 The server will be accessible at [http://localhost:3001](http://localhost:3001) (change port on server.ts)

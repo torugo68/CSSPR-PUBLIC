@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router/auto';
 import { routes } from 'vue-router/auto-routes';
 import NotFound from '../pages/error/404/index.vue';
+import { globalState } from '@/globalState';
 
 routes.push({
   path: '/:pathMatch(.*)*',
@@ -22,7 +23,7 @@ router.beforeEach(async (to, from, next) => {
       return;
     }
 
-    const response = await fetch('http://localhost:3001/api/auth', {
+    const response = await fetch(`${globalState.apiUrl.value}/api/auth`, {
       method: 'GET',
       credentials: 'include'
     });

@@ -61,6 +61,8 @@
   import { ref, reactive, watch, onMounted, computed } from 'vue';
   import axios from 'axios';
   
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
@@ -133,7 +135,7 @@
 
     async function fetchData() {
         try {
-            await axios.get('http://localhost:3001/api/logs', { withCredentials: true })
+            await axios.get(`${globalState.apiUrl.value}/api/logs`, { withCredentials: true })
             .then((response) => {
               const logsInfo = response.data.map(log => {
                 if (log.user) {

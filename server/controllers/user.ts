@@ -183,8 +183,8 @@ interface UserQuery {
 
 export const findAll = async (req: Request, res: Response) => {
     try {
-        let { query, count } = req.query;
-
+        let { query, count, roleId, systemId } = req.query;
+        console.log(req.query)
         let parsedCount = 25;
 
         if (count) {
@@ -195,7 +195,7 @@ export const findAll = async (req: Request, res: Response) => {
             }
         } 
 
-        const users = await prisma.user.findMany({
+        let users = await prisma.user.findMany({
             where: {
                 AND: [
                     {
@@ -233,6 +233,14 @@ export const findAll = async (req: Request, res: Response) => {
                 },
             }
         });
+
+        if (roleId) {
+            users = users.filter((user) => user.roleId === Number(roleId));
+        } 
+
+        if (systemId) {
+            users = users.filter((user) => user.permissions.some((permission) => permission.systemId === Number(systemId)));
+        }
 
         res.status(200).json(users);
     } catch (e) {

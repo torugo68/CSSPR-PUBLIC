@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import session from "express-session";
@@ -12,7 +15,7 @@ import api from './routes/api';
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3000'];
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3001', 'http://10.38.25.67:3000'];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -37,7 +40,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // passport middleware
 app.use(session({
-  secret: "This is a secret",
+  secret: process.env.SESSION_SECRET || 'secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -63,10 +66,11 @@ app.use(function(err: any, req: Request, res: Response, next: NextFunction) {
   res.status(err.status || 500);
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.PORT || '3001', 10);
+const HOST = process.env.HOST || '0.0.0.0';
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });
 
 export default app;

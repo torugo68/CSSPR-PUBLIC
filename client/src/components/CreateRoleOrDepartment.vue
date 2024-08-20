@@ -59,6 +59,8 @@
   import { useField, useForm } from 'vee-validate'
   import axios from 'axios';
 
+  import { globalState } from '../globalState';
+
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
@@ -97,23 +99,23 @@ const emitValue = () => {
 
   switch (tab.value) {
     case 0: 
-      fetch = 'http://localhost:3001/api/admin';
+      fetch = `${globalState.apiUrl.value}/api/admin`;
       currentName = 'Admin';
       break;
     case 1:
-      fetch = 'http://localhost:3001/api/department';
+      fetch = `${globalState.apiUrl.value}/api/department`;
       currentName = 'Setor';
       break;
     case 2:
-      fetch = 'http://localhost:3001/api/role';
+      fetch = `${globalState.apiUrl.value}/api/role`;
       currentName = 'Grupo';
       break;
     case 3:
-      fetch = 'http://localhost:3001/api/system';
+      fetch = `${globalState.apiUrl.value}/api/system`;
       currentName = 'Sistema';
       break;
     case 4:
-      fetch = 'http://localhost:3001/api/sid';
+      fetch = `${globalState.apiUrl.value}/api/sid`;
       currentName = 'Termo';
       break;
     default:
@@ -187,10 +189,10 @@ const emitValue = () => {
               { withCredentials: true });
             }
             await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
-            toastr.success(`${currentName} editado com sucesso!`);
+            toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 350 });
           } else {
             if (currentName === 'Admin') {
-              await axios.post(`http://localhost:3001/api/auth/signup`, { 
+              await axios.post(`${globalState.apiUrl.value}/api/auth/signup`, { 
                 username: values.name,
                 password: values.password,
                }, 
@@ -198,11 +200,11 @@ const emitValue = () => {
             } else {
               await axios.post(fetch, { name: values.name }, { withCredentials: true });
             }
-            toastr.success(`${currentName} criado com sucesso!`);
+            toastr.success(`${currentName} criado com sucesso!`, null, { timeOut: 350 });
           }
           emitValue();
         } catch (error) {
-          toastr.error('Algo deu errado, talvez o nome já exista.');
+          toastr.error('Algo deu errado, talvez o nome já exista.', null, { timeOut: 350 });
         }
         loading.value = false;
       }, 1000);
