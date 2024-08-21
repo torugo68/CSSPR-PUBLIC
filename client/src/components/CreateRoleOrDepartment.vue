@@ -189,7 +189,7 @@ const emitValue = () => {
               { withCredentials: true });
             }
             await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
-            toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 350 });
+            toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 470});
           } else {
             if (currentName === 'Admin') {
               await axios.post(`${globalState.apiUrl.value}/api/auth/signup`, { 
@@ -200,11 +200,11 @@ const emitValue = () => {
             } else {
               await axios.post(fetch, { name: values.name }, { withCredentials: true });
             }
-            toastr.success(`${currentName} criado com sucesso!`, null, { timeOut: 350 });
+            toastr.success(`${currentName} criado com sucesso!`, null, { timeOut: 470});
           }
           emitValue();
         } catch (error) {
-          toastr.error('Algo deu errado, talvez o nome já exista.', null, { timeOut: 350 });
+          toastr.error('Algo deu errado, talvez o nome já exista.', null, { timeOut: 470});
         }
         loading.value = false;
       }, 1000);

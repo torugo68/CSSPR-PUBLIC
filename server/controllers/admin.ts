@@ -63,6 +63,7 @@ export const remove = async (req: Request, res: Response) => {
         await prisma.admin.delete({
             where: {id: Number(req.params.id)},
         });
+        res.status(200).json({message: "Admin deleted."});
     } catch (e) {
         res.status(500).json({message: "Error on removing admin."});
     }

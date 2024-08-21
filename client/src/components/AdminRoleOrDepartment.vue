@@ -141,22 +141,18 @@ function toggleDeleteDialog() {
   dialogDelete.value = !dialogDelete.value;
 }
 
-const confirmDelete = () => {
+const confirmDelete = async () => {
   loadingDelete.value = true;
-  console.log('deleting', currentDeleteItem.value);
-  axios.delete(`${fetch}/${currentDeleteItem.value}`, { withCredentials: true })
+
+  await axios.delete(`${fetch}/${currentDeleteItem.value}`, { withCredentials: true })
     .then(() => {
-      toastr.success(`${headers[0].title} deletado com sucesso!`, null, { timeOut: 350 });
+      toastr.success(`${headers[0].title} deletado com sucesso!`, null, { timeOut: 470});
       fetchData();
-      dialogDelete.value = false;
-      loadingDelete.value = false;
     }).catch((error) => {
-      toastr.error('Erro ao deletar o item', null, { timeOut: 350 });
-      loadingDelete.value = false;
+      toastr.error('Erro ao deletar o item', null, { timeOut: 470});
     });
-  
+    
     loadingDelete.value = false;
-    toastr.success(`${headers[0].title} deletado com sucesso!`, null, { timeOut: 350 });
     toggleDeleteDialog()
   };
 

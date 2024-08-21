@@ -14,6 +14,7 @@
       <v-text-field v-model="username" density="compact" placeholder="Usuário" prepend-inner-icon="mdi-account-outline"
         variant="outlined">
       </v-text-field>
+      
       <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
         Senha
       </div>

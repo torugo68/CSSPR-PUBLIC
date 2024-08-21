@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
+const randomName = faker.person.fullName();
 
 async function main() {
   const operations = [
@@ -119,7 +121,7 @@ async function main() {
   // DISCLAIMER: This is a simple seed script to populate the database with some initial data. Not related to real world data.
   const users = [
     {
-      name: 'Victor Marques',
+      name: randomName,
       email: 'victor.marques@pge.pr.gov.br',
       roleId: 1,
       departmentId: 56

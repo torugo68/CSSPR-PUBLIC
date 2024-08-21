@@ -257,15 +257,15 @@
             })
             .then(response => {
               loading.value = false;
-              toastr.success('Usuário criado com sucesso', null, { timeOut: 350 });
+              toastr.success('Usuário criado com sucesso', null, { timeOut: 470});
               emitValue(response.data);
             }).catch(e => {
               loading.value = false;
-              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
+              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
             });
           } catch (e) {
             loading.value = false;
-            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
+            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
           }
         }, 1000);
     });

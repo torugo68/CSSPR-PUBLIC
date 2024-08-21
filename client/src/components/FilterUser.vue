@@ -19,6 +19,82 @@
                 vertical
             ></v-divider>
             <v-spacer></v-spacer>
+            <div @click="filterToggle">
+              <span class="headline">Filtro Avançado</span>
+              <v-icon
+                class="me-8"
+                size="large"
+              >
+                mdi-filter
+              </v-icon>
+            </div>
+            <v-dialog v-model="filter" max-width="400px" :loading="loading">
+              <v-card>
+                <v-card-title >
+                  <span class="headline">Filtro Avançado</span>
+                  <v-icon size="small" class="mb-2">mdi-filter</v-icon>
+                </v-card-title>
+                <v-card-text>
+                  <v-select
+                    v-model="selectedRoles"
+                    :items="roles.map(role => role.name).sort()"
+                    label="Filtrar por Grupo"
+                    multiple
+                    dense
+                    hide-details
+                    class="me-2"
+                  >
+                    <template #selection="{ item, index }">
+                      <v-chip v-if="index < 3" small>
+                        {{ item.title }}
+                      </v-chip>
+                      <div v-if="index === 3 && showMoreRoles" style="color: grey; font-size: small">
+                        (+{{ selectedRoles.length - 3 }} outros)
+                      </div>
+                    </template>
+                  </v-select>
+                </v-card-text>
+                <v-card-text>
+                  <v-select
+                    v-model="selectedDepartments"
+                    :items="departments.map(department => department.name).sort()"
+                    label="Filtrar por Setores"
+                    multiple
+                    dense
+                    hide-details
+                    class="me-2"
+                  >
+                    <template v-slot:prepend-item>
+                      <v-checkbox
+                        class="ml-4 text-body-2 small-checkbox"
+                        @click="toggleSelectAll"
+                        hide-details
+                        v-model="selectAll"
+                        ripple
+                      >
+                        <template v-slot:label>
+                          <span class="text-body-2"> Selecionar todos </span>
+                        </template>
+                      </v-checkbox>
+                      <v-divider />
+                    </template>
+                    <template #selection="{ item, index }">
+                      <v-chip v-if="index < 3" small>
+                        {{ item.title }}
+                      </v-chip>
+                      <div v-if="index === 3 && showMoreDepartments" style="color: grey; font-size: small">
+                        (+{{ selectedDepartments.length - 3 }} outros)
+                      </div>
+                    </template>
+                  </v-select>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" @click="reset">Limpar</v-btn>
+                  <v-btn color="primary" @click="filterToggle">Fechar</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
             <v-text-field
                 append-inner-icon="mdi-magnify"
                 density="compact"
@@ -33,7 +109,6 @@
             <v-btn
                 color="primary"
                 @click="fetchData"
-                class="mr-10"
                 :disabled="searching"
             >
             Filtrar
@@ -44,6 +119,9 @@
             max-width="500px"
             >
           </v-dialog>
+          <v-btn :disabled="!user || user.length === 0" icon class="me-2" style="color: green;">
+            <v-icon @click="exportToCSV">mdi-file-excel</v-icon>
+          </v-btn>
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
@@ -59,7 +137,7 @@
     </template>
 
 <script setup>
-  import { ref, reactive, watch, onMounted, computed } from 'vue';
+  import { ref, watch, onMounted, computed } from 'vue';
   import axios from 'axios';
   
   import { globalState } from '../globalState';
@@ -67,78 +145,180 @@
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
   
-  const isMounted = ref(false); 
   const loading = ref(true);
   const dialog = ref(false);
   const headers = [
-        {
-          title: 'Nome',
-          align: 'start',
-          key: 'name',
-        },
-        { title: 'Email', key: 'email', sortable: false },
-        { title: 'Grupo', key: 'role', sortable: false },
-        { title: 'Setor', key: 'department', sortable: false },
-        // { title: 'Ações', key: 'actions', sortable: false }, to be implemented
-    ];
-    const user = ref([]);
-    const id = ref(null);
-
-    const query = ref('');
-    const searching = ref(false);
+      {
+        title: 'Nome',
+        align: 'start',
+        key: 'name',
+      },
+      { title: 'Email', key: 'email', sortable: false },
+      { title: 'Grupo', key: 'role', sortable: false },
+      { title: 'Setor', key: 'department', sortable: false },
+      // { title: 'Ações', key: 'actions', sortable: false }, to be implemented
+  ];
+  const user = ref([]);
+  const id = ref(null);
+  const roles = ref([]);
+  const departments = ref([]);
+  const selectedRoles = ref([]);
+  const selectedDepartments = ref([]);
   
-    function formatDate(isoDate) {
-      const date = new Date(isoDate);
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-        timeZone: 'UTC'
-      }).format(date);
+  const query = ref('');
+  const searching = ref(false);
+  const filter = ref(false);
+  const selectAll = ref(false);
+
+  function filterToggle() {
+    filter.value = !filter.value;
+  }
+  
+  function reset() {
+    selectedRoles.value = [];
+    selectedDepartments.value = []
+  }
+
+
+  function toggleSelectAll() {
+    selectAll.value = !selectAll.value;
+    if (selectedDepartments.value.length != 0) {
+      selectedDepartments.value = [];
+    } else {
+      selectedDepartments.value = departments.value.map(department => department.name);
     }
+  }
 
-    watch(dialog, (val) => {
-        if (!val) close();
-    });
+  const showMoreRoles = computed(() => {
+    return selectedRoles.value.length > 3;
+  });
 
-    function fetchData() {
-        try {
-            if (query.value) {
-                searching.value = true;
-                setTimeout(async () => {
-                    const response = await axios.get(`${globalState.apiUrl.value}/api/user?query=${query.value}`, { withCredentials: true });
-                    const userInfo = response.data.map(user => {
-                        return {
-                            id: user.id,
-                            name: user.name,
-                            email: user.email,
-                            role: user.role.name,
-                            department: user.department.name,
-                        }
-                    });
-                    user.value = userInfo;
-                    searching.value = false;
-                }, 450);
-            }
-        } catch (error) {
-            console.error("Error fetching data");
-        }
+
+  const showMoreDepartments = computed(() => {
+    return selectedDepartments.value.length > 3;
+  });
+
+  watch(selectedRoles, (newVal) => {
+    if (newVal.length === 0) {
+      selectAll.value = false;
     }
+  });
 
-    function viewUser(item) {
+
+  function formatDate(isoDate) {
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC'
+    }).format(date);
+  }
+
+  watch(dialog, (val) => {
+      if (!val) close();
+  });
+
+  const exportToCSV = () => {
+  const csvContent = convertToCSV(user.value);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'relatorio-usuarios.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const convertToCSV = (data) => {
+  if (data.length === 0) return '';
+
+  const headers = Object.keys(data[0])
+    .filter(key => key !== 'id')
+    .map(key => {
+      if (key === 'name') return 'Name';
+      if (key === 'role') return 'Grupo';
+      if (key === 'department') return 'Setor';
+      return key;
+    })
+    .join(',');
+
+  const rows = data
+    .map(user => {
+      const { id, ...rest } = user;
+      return Object.values(rest).join(',');
+    })
+    .join('\n');
+
+  return `${headers}\n${rows}`;
+};
+
+  function fetchData() {
+      try {
+          searching.value = true;
+          setTimeout(async () => {
+              const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
+              params: {
+                query: query.value,
+                selectedRoles: selectedRoles.value.map(roleName => {
+                  const role = roles.value.find(r => r.name === roleName);
+                  return role ? role.id : null;
+                }).filter(id => id !== null),
+                selectedDepartments: selectedDepartments.value.map(departmentName => {
+                  const department = departments.value.find(r => r.name === departmentName);
+                  return department ? department.id : null;
+                }).filter(id => id !== null)
+              },
+                withCredentials: true
+              });
+              const userInfo = response.data.map(user => {
+                  return {
+                      id: user.id,
+                      name: user.name,
+                      email: user.email,
+                      role: user.role.name,
+                      department: user.department.name,
+                  }
+              });
+              user.value = userInfo;
+              searching.value = false;
+          }, 450);
+      } catch (error) {
+          console.error("Error fetching data");
+          searching.value = false;
+      }
+  }
+
+  function viewUser(item) {
     id.value = item.id;
     dialog.value = true;
   }
-  </script>
+
+  onMounted(async () => {
+      try {
+          roles.value = (await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })).data;
+          departments.value = (await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })).data;
+          loading.value = false;
+      } catch (error) {
+          console.error("Error fetching data");
+      }
+  });
+</script>
 
 <style scoped>
   .data-table {
     flex-grow: 1;
     height: 650px;
     max-height: fit-content;
+  }
+  .small-checkbox {
+    height: 24px;
+    line-height: 24px;
   }
 </style>

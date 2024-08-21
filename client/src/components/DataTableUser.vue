@@ -209,9 +209,9 @@
         }
       });
       usersData.value = usersData.value.filter(user => user.id !== userId);
-      toastr.success('Usuário deletado com sucesso!', null, { timeOut: 350 });
+      toastr.success('Usuário deletado com sucesso!', null, { timeOut: 470});
     } catch (error) {
-      toastr.error('Erro ao deletar usuário', null, { timeOut: 350 });
+      toastr.error('Erro ao deletar usuário', null, { timeOut: 470});
     }
     closeDelete();
   }

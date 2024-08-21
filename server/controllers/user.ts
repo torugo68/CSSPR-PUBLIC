@@ -3,6 +3,8 @@ import { ZodError } from "zod";
 
 import { userSchema, userUpdateSchema, optionalSidSchema } from "../middleware/validator";
 import prisma from "../config/db";
+import { error } from "console";
+import { use } from "passport";
 
 export const create = async (req: Request, res: Response) => {
     try {
@@ -140,12 +142,16 @@ export const restore = async (req: Request, res: Response) => {
 
 export const findOne = async (req: Request, res: Response) => {
     try {
+        const { disable } = req.query;
+
+        const disableBoolean = disable === 'true' ? true : false;
+
         const user = await prisma.user.findUnique({
             where: { 
                 id: Number(req.params.id),
-                deletedAt: null
-             },
-             include: {
+                deletedAt: disableBoolean ? { not: null } : null
+            },
+            include: {
                 permissions: true,
                 role: {
                     select: {
@@ -183,40 +189,55 @@ interface UserQuery {
 
 export const findAll = async (req: Request, res: Response) => {
     try {
-        let { query, count, roleId, systemId } = req.query;
-        console.log(req.query)
-        let parsedCount = 25;
+        let { query, disable, selectedRoles, selectedDepartments } = req.query;
+        
+        let roleIds: number[] = [];
+        let departmentIds: number[] = [];
 
-        if (count) {
-            try {
-                parsedCount = parseInt(count as string);
-            } catch (e) {
-                parsedCount = 25;    
+        if (selectedRoles) {
+            if (!Array.isArray(selectedRoles)) {
+                res.status(400).json({ message: "Invalid query parameters" });
+            } else {
+                roleIds = (selectedRoles as string[]).map(role => parseInt(role, 10)).filter(role => !isNaN(role));
             }
-        } 
+        }
 
+        if (selectedDepartments) {
+            if (!Array.isArray(selectedDepartments)) {
+                res.status(400).json({ message: "Invalid query parameters" });
+            } else {
+                departmentIds = (selectedDepartments as string[]).map(department => parseInt(department, 10)).filter(department => !isNaN(department));
+            }
+        }
+        const disableBoolean = disable === 'true' ? true : false;
+
+        let databaseQuery = {
+            AND: [
+                {
+                    OR: [
+                        query ? { name: { contains: query as string } } : {},
+                        query ? { email: { contains: query as string } } : {}
+                    ]
+                },
+                roleIds.length > 0 ? { roleId: { in: roleIds } } : {},
+                departmentIds.length > 0 ? { departmentId: { in: departmentIds } } : {},
+                disableBoolean ? { deletedAt: {not: null} } : { deletedAt: null }
+            ]
+        }
+        
         let users = await prisma.user.findMany({
-            where: {
-                AND: [
-                    {
-                        OR: [
-                            query ? { name: { contains: query as string } } : {},
-                            query ? { email: { contains: query as string } } : {}
-                        ]
-                    },
-                    { deletedAt: null }
-                ]
-            },
-            take: parsedCount,
+            where: databaseQuery,
             include: {
                 permissions: true,
                 role: {
                     select: {
+                        id:true,
                         name: true,
                     },
                 },
                 department: {
                     select: {
+                        id:true,
                         name: true,
                     },
                 },
@@ -234,16 +255,8 @@ export const findAll = async (req: Request, res: Response) => {
             }
         });
 
-        if (roleId) {
-            users = users.filter((user) => user.roleId === Number(roleId));
-        } 
-
-        if (systemId) {
-            users = users.filter((user) => user.permissions.some((permission) => permission.systemId === Number(systemId)));
-        }
-
         res.status(200).json(users);
     } catch (e) {
-        res.status(500).json({ message: "Error on find users." });
+        res.status(500).json({ message: "Error on find users.", error: e });
     }
 };

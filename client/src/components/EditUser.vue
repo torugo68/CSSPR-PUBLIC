@@ -2,7 +2,7 @@
   <v-card
     class="mx-auto"
     min-width="450px"
-    max-width="500px"
+    max-width="600px"
     >
       <v-card-title class="custom-title">
         <v-icon class="mr-1">mdi-account</v-icon>
@@ -87,7 +87,7 @@
               </v-select>
               <div class="d-flex align-items-center mb-3">
                 <span class="me-1 ml-2">Adicionar novo termo</span>
-                <v-icon small @click="addNewSid()" class="ml-1">mdi-plus-circle</v-icon>
+                <v-icon small @click="addNewSid()">mdi-plus-circle</v-icon>
               </div>
               <div v-for="item, index in sids" :key="item">
                 <div style="display: flex; align-items: center;">
@@ -106,7 +106,7 @@
                           </div>
                         </v-col>
                         <v-col>
-                          <v-row class="fill-height d-flex">
+                          <v-row>
                             <v-col>
                               <v-text-field
                                 v-model="item.value"
@@ -114,18 +114,20 @@
                                 :error-messages="item.errorMessage"
                                 clearable
                                 variant="underlined"
-                                class="mb-3 custom-text-field"
+                                class="mb-3 custom-text-field flex"
                                 @input="validateSid(item.value, index)"
-                              ></v-text-field>
-                            </v-col>
-                            <v-col cols="auto" class="d-flex align-center">
-                              <v-icon small @click="toggleActivation(index)" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                              >
+                                <template v-slot:append>
+                                  {{ console.log(item.errorMessage) }}
+                                  <v-icon small @click="toggleActivation(index)" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                                </template>
+                              </v-text-field>
                             </v-col>
                           </v-row>
                         </v-col>
                       </v-row>
                     </v-container>
-                    
+                    <!-- existing sids !!!  -->
                     <div style="display: flex; align-items: center;" v-else> 
                       <v-text-field
                       v-model="item.value"
@@ -136,7 +138,7 @@
                         class="mb-3 custom-text-field"
                         @input="validateSid(item.value, index)"
                         ></v-text-field>
-                      <v-icon small @click="toggleActivation(index)" class="ml-1" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
+                      <v-icon small @click="toggleActivation(index)" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
                     </div>
                   </div>
                   <div v-else style="display: flex; align-items: center; flex: 1;" class="mb-3">
@@ -340,11 +342,11 @@
           emitEditedUser(response.data);
         });
 
-        toastr.success('Usuário salvo com sucesso.', null, { timeOut: 350 });
+        toastr.success('Usuário salvo com sucesso.', null, { timeOut: 470});
         emitValue(true);  
       } catch (error) {
         loading.value = false;
-        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 350 });
+        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
         console.error('Error saving user');
       }
 
@@ -485,7 +487,7 @@
       .filter(item => !sids.value.map(item => item.sid.name).includes(item))[0];
       const firstAvailableId = allSids.value.find(item => item.name === firstAvailableName)?.id;
       if (!firstAvailableName || !firstAvailableId) {
-        return toastr.error('Todos os termos já foram adicionados.', null, { timeOut: 350 });
+        return toastr.error('Todos os termos já foram adicionados.', null, { timeOut: 470});
       }
 
       return sids.value.push({
@@ -512,5 +514,9 @@
 .button-container {
   display: flex;
   justify-content: flex-end;
+}
+
+.custom-text-field {
+  width: 99%;
 }
 </style>
