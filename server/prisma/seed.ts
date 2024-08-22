@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker';
+import { faker } from '@faker-js/faker/locale/pt_BR';
 
 const prisma = new PrismaClient();
-const randomName = faker.person.fullName();
 
 async function main() {
   const operations = [
@@ -119,74 +118,16 @@ async function main() {
   ]
 
   // DISCLAIMER: This is a simple seed script to populate the database with some initial data. Not related to real world data.
-  const users = [
-    {
-      name: randomName,
-      email: 'victor.marques@pge.pr.gov.br',
-      roleId: 1,
-      departmentId: 56
-    },
-    {
-      name: 'Paulo Gomes',
-      email: 'paulo-gomes@pge.pr.gov.br',
+  let users = [];
+
+  for (let i = 0; i < 654; i++) {
+    users.push({
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
       roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Maria Silva',
-      email: 'maria-silva@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'João Souza',
-      email: 'joao-souza@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Ana Oliveira',
-      email: 'ana-oliveira@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Carlos Lima',
-      email: 'carlos-lima@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Fernanda Costa',
-      email: 'fernanda-costa@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Ricardo Pereira',
-      email: 'ricardo-pereira@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Juliana Santos',
-      email: 'juliana-santos@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Roberto Almeida',
-      email: 'roberto-almeida@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    },
-    {
-      name: 'Patricia Rodrigues',
-      email: 'patricia-rodrigues@pge.pr.gov.br',
-      roleId: Math.floor(Math.random() * 7) + 1,
-      departmentId: Math.floor(Math.random() * 55) + 1
-    }
-  ]
+      departmentId: Math.floor(Math.random() * 55) + 1,
+    });
+  }  
 
   for (const item of roles) {
     await prisma.role.create({

@@ -12,6 +12,7 @@ declare module 'vue' {
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
     DataTableLogs: typeof import('./src/components/DataTableLogs.vue')['default']
     DataTableUser: typeof import('./src/components/DataTableUser.vue')['default']
+    DisabledUsers: typeof import('./src/components/DisabledUsers.vue')['default']
     EditField: typeof import('./src/components/editField.vue')['default']
     EditUser: typeof import('./src/components/EditUser.vue')['default']
     FilterUser: typeof import('./src/components/FilterUser.vue')['default']

@@ -30,6 +30,7 @@
               <v-list-item prepend-icon="mdi-account-group" title="Grupos" @click="changeTab(2)"></v-list-item>
               <v-list-item prepend-icon="mdi-cog" title="Sistemas" @click="changeTab(3)"></v-list-item>
               <v-list-item prepend-icon="mdi-file-document" title="Termos" @click="changeTab(4)"></v-list-item>
+              <v-list-item prepend-icon="mdi-account-off" title="Desativados" @click="changeTab(5)"></v-list-item>
             </v-list>
   
             <template v-slot:append>
@@ -53,6 +54,7 @@
               <admin-role-or-department v-if="tab === 2" :parentData="tab"></admin-role-or-department>
               <admin-role-or-department v-if="tab === 3" :parentData="tab"></admin-role-or-department>
               <admin-role-or-department v-if="tab === 4" :parentData="tab"></admin-role-or-department>
+              <DisabledUsers v-if="tab === 5" :parentData="tab"></DisabledUsers>
             </v-container>
           </v-main>
         </v-layout>
@@ -61,7 +63,8 @@
   </template>
   
 <script setup>
-  import { ref } from 'vue';
+  import DisabledUsers from '@/components/DisabledUsers.vue';
+import { ref } from 'vue';
   import { useRouter } from 'vue-router';
   
   const router = useRouter();

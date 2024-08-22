@@ -4,53 +4,54 @@
       :headers="headers"
       :items="user"
       :sort-by="[{ key: 'date', order: 'desc' }]"
-      hide-default-footer
+      :items-per-page="50"
+      itemsPerPageText="Usuários por página"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
       no-data-text="Digite um nome ou email para filtrar"
     >
-        <template v-slot:top>
-            <v-toolbar
-                prominent
-                color="blue-lighten-5"
+      <template v-slot:top>
+          <v-toolbar
+              prominent
+              color="blue-lighten-5"
+          >
+          <v-toolbar-title style="font-weight: 2px;">Filtrar Usuários</v-toolbar-title>
+          <v-divider
+              inset
+              vertical
+          ></v-divider>
+          <v-spacer></v-spacer>
+          <div @click="filterToggle">
+            <span class="headline">Filtro Avançado</span>
+            <v-icon
+              class="me-8"
+              size="large"
             >
-            <v-toolbar-title style="font-weight: 2px;">Filtrar Usuários</v-toolbar-title>
-            <v-divider
-                inset
-                vertical
-            ></v-divider>
-            <v-spacer></v-spacer>
-            <div @click="filterToggle">
-              <span class="headline">Filtro Avançado</span>
-              <v-icon
-                class="me-8"
-                size="large"
-              >
-                mdi-filter
-              </v-icon>
-            </div>
-            <v-dialog v-model="filter" max-width="400px" :loading="loading">
-              <v-card>
-                <v-card-title >
-                  <span class="headline">Filtro Avançado</span>
-                  <v-icon size="small" class="mb-2">mdi-filter</v-icon>
-                </v-card-title>
-                <v-card-text>
-                  <v-select
-                    v-model="selectedRoles"
-                    :items="roles.map(role => role.name).sort()"
-                    label="Filtrar por Grupo"
-                    multiple
-                    dense
-                    hide-details
-                    class="me-2"
-                  >
-                    <template #selection="{ item, index }">
-                      <v-chip v-if="index < 3" small>
-                        {{ item.title }}
-                      </v-chip>
-                      <div v-if="index === 3 && showMoreRoles" style="color: grey; font-size: small">
-                        (+{{ selectedRoles.length - 3 }} outros)
-                      </div>
+              mdi-filter
+            </v-icon>
+          </div>
+          <v-dialog v-model="filter" max-width="400px" :loading="loading">
+            <v-card>
+              <v-card-title >
+                <span class="headline">Filtro Avançado</span>
+                <v-icon size="small" class="mb-2">mdi-filter</v-icon>
+              </v-card-title>
+              <v-card-text>
+                <v-select
+                  v-model="selectedRoles"
+                  :items="roles.map(role => role.name).sort()"
+                  label="Filtrar por Grupo"
+                  multiple
+                  dense
+                  hide-details
+                  class="me-2"
+                >
+                  <template #selection="{ item, index }">
+                    <v-chip v-if="index < 3" small>
+                      {{ item.title }}
+                    </v-chip>
+                    <div v-if="index === 3 && showMoreRoles" style="color: grey; font-size: small">
+                      (+{{ selectedRoles.length - 3 }} outros)
+                    </div>
                     </template>
                   </v-select>
                 </v-card-text>
@@ -154,8 +155,8 @@
         key: 'name',
       },
       { title: 'Email', key: 'email', sortable: false },
-      { title: 'Grupo', key: 'role', sortable: false },
-      { title: 'Setor', key: 'department', sortable: false },
+      { title: 'Grupo', key: 'role', sortable: true },
+      { title: 'Setor', key: 'department', sortable: true },
       // { title: 'Ações', key: 'actions', sortable: false }, to be implemented
   ];
   const user = ref([]);
@@ -236,31 +237,42 @@
   document.body.removeChild(link);
 };
 
-const convertToCSV = (data) => {
-  if (data.length === 0) return '';
+  const convertToCSV = (data) => {
+    if (data.length === 0) return '';
 
-  const headers = Object.keys(data[0])
-    .filter(key => key !== 'id')
-    .map(key => {
-      if (key === 'name') return 'Name';
-      if (key === 'role') return 'Grupo';
-      if (key === 'department') return 'Setor';
-      return key;
-    })
-    .join(',');
+    data.sort((a, b) => {
+      const departmentComparison = a.department.localeCompare(b.department);
+      if (departmentComparison !== 0) {
+        return departmentComparison;
+      }
+      return a.role.localeCompare(b.role);
+    });
 
-  const rows = data
-    .map(user => {
-      const { id, ...rest } = user;
-      return Object.values(rest).join(',');
-    })
-    .join('\n');
+    const headers = Object.keys(data[0])
+      .filter(key => key !== 'id')
+      .map(key => {
+        if (key === 'name') return 'Name';
+        if (key === 'role') return 'Grupo';
+        if (key === 'email') return 'Email';
+        if (key === 'department') return 'Setor';
+        return key;
+      })
+      .join(',');
 
+    const rows = data
+      .map(user => {
+        const { id, ...rest } = user;
+        return Object.values(rest)
+          .map(value => `"${String(value).replace(/"/g, '""')}"`)
+          .join(',');
+      })
+      .join('\n');
   return `${headers}\n${rows}`;
-};
+  };
 
   function fetchData() {
       try {
+          if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0) {
           searching.value = true;
           setTimeout(async () => {
               const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
@@ -287,8 +299,10 @@ const convertToCSV = (data) => {
                   }
               });
               user.value = userInfo;
+              console.log(user.value)
               searching.value = false;
           }, 450);
+        }
       } catch (error) {
           console.error("Error fetching data");
           searching.value = false;

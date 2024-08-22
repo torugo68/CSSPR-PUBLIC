@@ -5,7 +5,9 @@
       :items="filteredUsers"
       :sort-by="[{ key: 'email', order: 'asc' }]"
       v-if="!loading"
+      :items-per-page="25"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
+      itemsPerPageText="Usuários por página"
     >
       <template v-slot:top>
         <v-toolbar

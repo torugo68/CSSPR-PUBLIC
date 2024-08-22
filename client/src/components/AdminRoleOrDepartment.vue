@@ -20,7 +20,7 @@
     <v-dialog v-model="dialogDelete" max-width="30%">
       <v-card>
         <v-card-title class="text-h5">Deletar {{ headers[0].title }}?</v-card-title>
-        <p class="mx-2" v-if="!allowedToDelete">Não é possível deletar o {{ headers[0].title }} porque existem usuários associados a ele.</p>
+        <p style="text-align: center;" v-if="!allowedToDelete">Não é possível deletar o {{ headers[0].title }} porque existem usuários associados a ele.</p>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue-darken-1" variant="text" @click="toggleDeleteDialog">Cancelar</v-btn>
