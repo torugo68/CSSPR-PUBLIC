@@ -3,8 +3,6 @@ import { ZodError } from "zod";
 
 import { userSchema, userUpdateSchema, optionalSidSchema } from "../middleware/validator";
 import prisma from "../config/db";
-import { error } from "console";
-import { use } from "passport";
 
 export const create = async (req: Request, res: Response) => {
     try {
@@ -189,10 +187,19 @@ interface UserQuery {
 
 export const findAll = async (req: Request, res: Response) => {
     try {
-        let { query, disable, selectedRoles, selectedDepartments } = req.query;
+        let { query, disable, selectedRoles, selectedDepartments, selectedSystems } = req.query;
         
         let roleIds: number[] = [];
         let departmentIds: number[] = [];
+        let systemIds: number[] = [];
+
+        if (selectedSystems) {
+            if (!Array.isArray(selectedSystems)) {
+                res.status(400).json({ message: "Invalid query parameters" });
+            } else {
+                systemIds = (selectedSystems as string[]).map(system => parseInt(system, 10)).filter(system => !isNaN(system));
+            }
+        }
 
         if (selectedRoles) {
             if (!Array.isArray(selectedRoles)) {
@@ -221,7 +228,8 @@ export const findAll = async (req: Request, res: Response) => {
                 },
                 roleIds.length > 0 ? { roleId: { in: roleIds } } : {},
                 departmentIds.length > 0 ? { departmentId: { in: departmentIds } } : {},
-                disableBoolean ? { deletedAt: {not: null} } : { deletedAt: null }
+                systemIds.length > 0 ? { permissions: { some: { systemId: { in: systemIds } } } } : {},
+                disableBoolean ? { deletedAt: { not: null } } : { deletedAt: null }
             ]
         }
         
@@ -240,17 +248,6 @@ export const findAll = async (req: Request, res: Response) => {
                         id:true,
                         name: true,
                     },
-                },
-                sids: {
-                    select: {
-                        sidId: true,
-                        value: true,
-                        sid: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
                 },
             }
         });

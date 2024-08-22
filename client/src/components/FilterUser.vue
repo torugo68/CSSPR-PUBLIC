@@ -89,6 +89,26 @@
                     </template>
                   </v-select>
                 </v-card-text>
+                <v-card-text v-if="systems != null || systems != undefined">
+                  <v-select
+                    v-model="selectedSystems"
+                    :items="systems.map(sid => sid.name).sort()"
+                    label="Filtrar por Sistema"
+                    multiple
+                    dense
+                    hide-details
+                    class="me-2"
+                  >
+                  <template #selection="{ item, index }">
+                    <v-chip v-if="index < 3" small>
+                      {{ item.title }}
+                    </v-chip>
+                    <div v-if="index === 3 && showMoreSystems" style="color: grey; font-size: small">
+                      (+{{ selectedRoles.length - 3 }} outros)
+                    </div>
+                  </template>
+                </v-select>
+                </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="primary" @click="reset">Limpar</v-btn>
@@ -131,7 +151,7 @@
           size="small"
           @click="viewUser(item)"
         >
-            mdi-eye
+          mdi-eye
         </v-icon>
       </template>
     </v-data-table>
@@ -145,6 +165,7 @@
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
+import { permission } from 'process';
   
   const loading = ref(true);
   const dialog = ref(false);
@@ -165,6 +186,8 @@
   const departments = ref([]);
   const selectedRoles = ref([]);
   const selectedDepartments = ref([]);
+  const selectedSystems = ref([]);
+  const systems = ref([]);
   
   const query = ref('');
   const searching = ref(false);
@@ -192,6 +215,10 @@
 
   const showMoreRoles = computed(() => {
     return selectedRoles.value.length > 3;
+  });
+
+  const showMoreSystems = computed(() => {
+    return selectedSystems.value.length > 3;
   });
 
 
@@ -255,6 +282,7 @@
         if (key === 'role') return 'Grupo';
         if (key === 'email') return 'Email';
         if (key === 'department') return 'Setor';
+        if (key === 'permissions') return 'Permissões';
         return key;
       })
       .join(',');
@@ -272,21 +300,25 @@
 
   function fetchData() {
       try {
-          if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0) {
+          if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0 || selectedSystems.value.length > 0) {
           searching.value = true;
           setTimeout(async () => {
               const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
-              params: {
-                query: query.value,
-                selectedRoles: selectedRoles.value.map(roleName => {
-                  const role = roles.value.find(r => r.name === roleName);
-                  return role ? role.id : null;
-                }).filter(id => id !== null),
-                selectedDepartments: selectedDepartments.value.map(departmentName => {
-                  const department = departments.value.find(r => r.name === departmentName);
-                  return department ? department.id : null;
-                }).filter(id => id !== null)
-              },
+                params: {
+                  query: query.value,
+                  selectedRoles: selectedRoles.value.map(roleName => {
+                    const role = roles.value.find(r => r.name === roleName);
+                    return role ? role.id : null;
+                  }).filter(id => id !== null),
+                  selectedDepartments: selectedDepartments.value.map(departmentName => {
+                    const department = departments.value.find(r => r.name === departmentName);
+                    return department ? department.id : null;
+                  }).filter(id => id !== null),
+                  selectedSystems: selectedSystems.value.map(systemName => {
+                    const system = systems.value.find(r => r.name === systemName);
+                    return system ? system.id : null;
+                  }).filter(id => id !== null)
+                },
                 withCredentials: true
               });
               const userInfo = response.data.map(user => {
@@ -318,6 +350,7 @@
       try {
           roles.value = (await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })).data;
           departments.value = (await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })).data;
+          systems.value = (await axios.get(`${globalState.apiUrl.value}/api/system`, { withCredentials: true })).data;
           loading.value = false;
       } catch (error) {
           console.error("Error fetching data");
