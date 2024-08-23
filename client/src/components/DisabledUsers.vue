@@ -52,7 +52,7 @@
             </v-card>
           </v-dialog>
           <v-dialog v-model="dialogView">
-            <ViewUser :userId="id" :disable="true" />
+            <view-user :userId="id" :disable="true" />
           </v-dialog>
         </v-toolbar>
     </template>
@@ -79,13 +79,13 @@
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-  import ViewUser from './ViewUser.vue';
 
   import { globalState } from '../globalState';
 
-  const usersData = ref([])
-  const departments = ref([])
-  const roles = ref([])
+  const usersData = ref([]);
+  const departments = ref([]);
+  const roles = ref([]);
+  const userLog = ref([]);
 
   const searchQuery = ref('');
 
@@ -99,11 +99,23 @@
   });
 
   async function restoreItemConfirm() {
-    toastr.success('Usuário restaurado com sucesso!', null, { timeOut: 470});
+    await axios.patch(
+      `${globalState.apiUrl.value}/api/user?userId=${id.value}`, 
+      { deletedAt: { not: null } }, 
+      { withCredentials: true }
+    )
+    .then(response => {
+      toastr.success('Usuário restaurado com sucesso!', null, { timeOut: 600});
+    })
+    .catch(error => {
+      console.error('Error restoring user');
+    });
+    fetchData()
     closeRestore();
   }
 
   function restoreItem(item) {
+    id.value = item.id;
     dialogRestore.value = true;
   }
 
@@ -121,7 +133,7 @@
     return usersData.value.filter(user =>
       user.name.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query)
-    );
+    ).sort((a, b) => new Date(b.date) - new Date(a.date));
   });
 
   const headers = [
@@ -134,30 +146,43 @@
     { title: 'Email', key: 'email' },
     { title: 'Grupo', key: 'roleId' },
     { title: 'Setor', key: 'departmentId' },
-    { title: 'Data da exclusão', key: 'departmentId' },
+    { title: 'Data da exclusão', key: 'deleteAt' },
     { title: 'Admin', key: 'admin' },
     { title: 'Ações', key: 'actions', sortable: false },
   ];
 
-  const loading = ref(false);
+const loading = ref(false);
 
+function formatDate(isoDate) {
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC'
+    }).format(date);
+  }
 async function fetchData() {
-    try {
-        const users = await axios.get(`${globalState.apiUrl.value}/api/user?disable=true`, {
-            withCredentials: true,
-            headers: {
-            'Content-Type': 'application/json'
-            }
-        });
-
-        await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
-        .then(response => {
-            roles.value = response.data;
-        })
-        .catch(error => {
-            console.error('Error fetching roles:');
-        });
-
+  try {
+    const users = await axios.get(`${globalState.apiUrl.value}/api/user?disable=true`, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
+    .then(response => {
+      roles.value = response.data;
+    })
+    .catch(error => {
+      console.error('Error fetching roles:');
+    });
+    
         await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
             .then(response => {
             departments.value = response.data;
@@ -165,13 +190,16 @@ async function fetchData() {
             .catch(error => {
             console.error('Error fetching departments');
             });
+
         const userInfo = users.data.map(user => {
             return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            roleId: roles.value.find(role => role.id === user.roleId).name,
-            departmentId: departments.value.find(department => department.id === user.departmentId).name,
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              roleId: roles.value.find(role => role.id === user.roleId).name,
+              departmentId: departments.value.find(department => department.id === user.departmentId).name,
+              deleteAt: formatDate(user.createdAt),
+              admin: user.logs.length > 0 && user.logs[0].admin ? user.logs[0].admin.username : "Não"
             }
         });
 
@@ -179,11 +207,12 @@ async function fetchData() {
     } catch (error) {
     console.error("Error fetching data");
     }
+    userLog.value = await axios.get(`${globalState.apiUrl.value}/api/logs/?userId=`, { withCredentials: true });
 }
 
   onMounted(() => {
-      loading.value = true;
-      fetchData()
+    loading.value = true;
+    fetchData()
       setTimeout(async () => {
         loading.value = false;
       }, 500);

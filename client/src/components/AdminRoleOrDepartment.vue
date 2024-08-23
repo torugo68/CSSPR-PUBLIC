@@ -1,7 +1,15 @@
 <template>
   <v-data-table-virtual
   :headers="headers"
-  :items="items"
+  :items="items.sort((a, b) => {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) {
+      return -1;
+    }
+    if (a.name.toLowerCase() > b.name.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  })"
   item-value="name"
   height="400px"
   :loading="loading"
@@ -49,7 +57,7 @@
   </template>
 
 <script setup> 
-import { ref, onMounted, defineProps } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 import toastr from 'toastr';

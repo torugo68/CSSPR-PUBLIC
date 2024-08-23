@@ -59,6 +59,9 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-dialog v-model="dialogView">
+            <view-user :userId="id" :disable="false" @closed="toggleViewDialog()"/>
+          </v-dialog>
           <v-dialog v-model="dialogEdit">
             <edit-user :userId="id" @closed="closeEdit" @editedUser="editedUser"></edit-user>
           </v-dialog>
@@ -77,6 +80,13 @@
           @click="deleteItem(item)"
         >
           mdi-delete
+        </v-icon>
+        <v-icon
+          class="me-2 ml-1"
+          size="small"
+          @click="viewItem(item)"
+        >
+          mdi-eye
         </v-icon>
       </template>
     </v-data-table>
@@ -134,6 +144,7 @@
   const roles = ref([]);
   const departments = ref([]);
   const searchQuery = ref('');
+  const dialogView = ref(false);
 
   const filteredUsers = computed(() => {
     const query = searchQuery.value.toLowerCase();
@@ -168,6 +179,10 @@
     dialogEdit.value = false;
   };
 
+  function toggleViewDialog() {
+    dialogView.value = !dialogView.value;
+  }
+
   const handleNewUser = (value) => {
     usersData.value.push({
       id: value.id,
@@ -194,6 +209,12 @@
     dialogEdit.value = true;
   }
 
+  function viewItem(item) {
+    id.value = item.id;
+    dialogView.value = !dialogView.value;
+  }
+
+  
   function deleteItem(item) {
     editedIndex.value = users.value.indexOf(item);
     Object.assign(editedItem, item);

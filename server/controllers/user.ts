@@ -127,8 +127,10 @@ export const remove = async (req: Request, res: Response) => {
 
 export const restore = async (req: Request, res: Response) => {
     try {
+        console.log("TETTETSTETTS")
+        console.log(req.query.userId);
         await prisma.user.update({
-            where: { id: Number(req.params.id) },
+            where: { id: Number(req.query.userId) },
             data: { deletedAt: null }
         });
         res.status(200).json({ message: "User restored successfully." });
@@ -150,6 +152,18 @@ export const findOne = async (req: Request, res: Response) => {
                 deletedAt: disableBoolean ? { not: null } : null
             },
             include: {
+                logs: {
+                    where: {
+                        operationId: 2
+                    },
+                    include: {
+                        admin: {
+                            select: {
+                                username: true
+                            }
+                        }
+                    }
+                },
                 permissions: true,
                 role: {
                     select: {
@@ -236,6 +250,18 @@ export const findAll = async (req: Request, res: Response) => {
         let users = await prisma.user.findMany({
             where: databaseQuery,
             include: {
+                logs: {
+                    where: {
+                        operationId: 2
+                    },
+                    include: {
+                        admin: {
+                            select: {
+                                username: true
+                            }
+                        }
+                    }
+                },
                 permissions: true,
                 role: {
                     select: {

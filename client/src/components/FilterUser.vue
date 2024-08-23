@@ -8,6 +8,7 @@
       itemsPerPageText="Usuários por página"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
       no-data-text="Digite um nome ou email para filtrar"
+      show-footer
     >
       <template v-slot:top>
           <v-toolbar
@@ -112,7 +113,7 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="primary" @click="reset">Limpar</v-btn>
-                  <v-btn color="primary" @click="filterToggle">Fechar</v-btn>
+                  <v-btn color="primary" @click="filterToggle">OK</v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -277,7 +278,7 @@
     const headers = Object.keys(data[0])
       .filter(key => key !== 'id')
       .map(key => {
-        if (key === 'name') return 'Name';
+        if (key === 'name') return 'Nome';
         if (key === 'role') return 'Grupo';
         if (key === 'email') return 'Email';
         if (key === 'department') return 'Setor';

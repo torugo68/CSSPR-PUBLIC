@@ -6,7 +6,7 @@ const router = Router();
 router.post('/', create);
 router.put('/:id', update);
 router.delete('/:id', remove);
-router.patch('/:id', restore);
+router.patch('/', restore);
 router.get('/:id', findOne);
 router.get('/', findAll);
 
