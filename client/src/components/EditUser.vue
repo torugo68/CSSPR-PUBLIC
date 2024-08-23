@@ -118,7 +118,6 @@
                                 @input="validateSid(item.value, index)"
                               >
                                 <template v-slot:append>
-                                  {{ console.log(item.errorMessage) }}
                                   <v-icon small @click="toggleActivation(index)" :disabled="item.errorMessage !== ''">mdi-content-save</v-icon>
                                 </template>
                               </v-text-field>

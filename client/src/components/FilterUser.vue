@@ -14,7 +14,7 @@
               prominent
               color="blue-lighten-5"
           >
-          <v-toolbar-title style="font-weight: 2px;">Filtrar Usuários</v-toolbar-title>
+          <v-toolbar-title>Filtrar Usuários</v-toolbar-title>
           <v-divider
               inset
               vertical
@@ -160,13 +160,12 @@
 <script setup>
   import { ref, watch, onMounted, computed } from 'vue';
   import axios from 'axios';
-  
+
   import { globalState } from '../globalState';
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-import { permission } from 'process';
-  
+
   const loading = ref(true);
   const dialog = ref(false);
   const headers = [
@@ -188,7 +187,7 @@ import { permission } from 'process';
   const selectedDepartments = ref([]);
   const selectedSystems = ref([]);
   const systems = ref([]);
-  
+
   const query = ref('');
   const searching = ref(false);
   const filter = ref(false);
@@ -197,7 +196,7 @@ import { permission } from 'process';
   function filterToggle() {
     filter.value = !filter.value;
   }
-  
+
   function reset() {
     selectedRoles.value = [];
     selectedDepartments.value = []
@@ -331,7 +330,6 @@ import { permission } from 'process';
                   }
               });
               user.value = userInfo;
-              console.log(user.value)
               searching.value = false;
           }, 450);
         }

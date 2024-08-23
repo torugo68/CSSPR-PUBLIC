@@ -58,9 +58,19 @@ export const findAll = async (req: Request, res: Response) => {
 
 export const findOne = async (req: Request, res: Response) => {
     try {
+        const { adminId, userId, operationId } = req.params;
+
+        const condition = operationId ? { operationId: Number(operationId) } : {};
+
         const logs = await prisma.logs.findMany({
             where: { 
-                adminId: Number(req.params.id),
+                OR: [
+                    { adminId: Number(adminId) },
+                    { userId: Number(userId) }
+                ],
+                AND: [
+                    condition
+                ]
              }
         });
         res.status(200).json(logs);

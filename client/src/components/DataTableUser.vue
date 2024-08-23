@@ -86,19 +86,19 @@
       color="primary"
       indeterminate
       ></v-progress-circular>
-      
+
     </template>
 
 <script setup>
   import { ref, reactive, watch, onMounted, nextTick, computed } from 'vue';
   import axios from 'axios';
-  
+
   import { globalState } from '../globalState';
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
-  
-  const isMounted = ref(false) 
+
+  const isMounted = ref(false)
   const loading = ref(true);
   const dialog = ref(false);
   const dialogDelete = ref(false);
@@ -129,16 +129,16 @@
     departmentId: -1,
   };
   const id = ref(1);
-  
+
   const usersData = ref([]);
   const roles = ref([]);
   const departments = ref([]);
   const searchQuery = ref('');
-  
+
   const filteredUsers = computed(() => {
     const query = searchQuery.value.toLowerCase();
-    return usersData.value.filter(user => 
-      user.name.toLowerCase().includes(query) || 
+    return usersData.value.filter(user =>
+      user.name.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query)
     );
   });
@@ -146,7 +146,7 @@
   watch(dialog, (val) => {
     if (!val) close();
   });
-  
+
   watch(dialogDelete, (val) => {
     if (!val) closeDelete();
   });
@@ -178,7 +178,7 @@
     });
     dialog.value = false;
   };
-  
+
   onMounted(() => {
     if (!isMounted.value) {
       setTimeout(async () => {
@@ -188,18 +188,18 @@
       }, 600);
     }
   });
-  
+
   function editItem(item) {
     id.value = item.id;
     dialogEdit.value = true;
   }
-  
+
   function deleteItem(item) {
     editedIndex.value = users.value.indexOf(item);
     Object.assign(editedItem, item);
     dialogDelete.value = true;
   }
-  
+
   async function deleteItemConfirm() {
     users.value.splice(editedIndex.value, 1);
     const userId = usersData.value.find(user => user.email === editedItem.email).id;
@@ -217,7 +217,7 @@
     }
     closeDelete();
   }
-  
+
   const dialogEdit = ref(false);
 
   function close() {
@@ -227,14 +227,14 @@
       editedIndex.value = -1;
     });
   }
-  
+
   function closeDelete() {
     dialogDelete.value = false;
     nextTick(() => {
       editedIndex.value = -1;
     });
   }
-  
+
   async function fetchData() {
     try {
       const users = await axios.get(`${globalState.apiUrl.value}/api/user`, {
@@ -251,7 +251,7 @@
       .catch(error => {
         console.error('Error fetching roles:');
       });
-      
+
       await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
         .then(response => {
           departments.value = response.data;
