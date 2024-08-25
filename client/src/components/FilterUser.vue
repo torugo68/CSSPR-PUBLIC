@@ -298,46 +298,45 @@
   return `${headers}\n${rows}`;
   };
 
-  function fetchData() {
-      try {
-          if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0 || selectedSystems.value.length > 0) {
-          searching.value = true;
-          setTimeout(async () => {
-              const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
-                params: {
-                  query: query.value,
-                  selectedRoles: selectedRoles.value.map(roleName => {
-                    const role = roles.value.find(r => r.name === roleName);
-                    return role ? role.id : null;
-                  }).filter(id => id !== null),
-                  selectedDepartments: selectedDepartments.value.map(departmentName => {
-                    const department = departments.value.find(r => r.name === departmentName);
-                    return department ? department.id : null;
-                  }).filter(id => id !== null),
-                  selectedSystems: selectedSystems.value.map(systemName => {
-                    const system = systems.value.find(r => r.name === systemName);
-                    return system ? system.id : null;
-                  }).filter(id => id !== null)
-                },
-                withCredentials: true
-              });
-              const userInfo = response.data.map(user => {
-                  return {
-                      id: user.id,
-                      name: user.name,
-                      email: user.email,
-                      role: user.role.name,
-                      department: user.department.name,
-                  }
-              });
-              user.value = userInfo;
-              searching.value = false;
-          }, 450);
-        }
-      } catch (error) {
-          console.error("Error fetching data");
-          searching.value = false;
+  async function fetchData() {
+    try {
+      searching.value = true;
+      if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0 || selectedSystems.value.length > 0) {
+        const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
+          params: {
+            query: query.value,
+            selectedRoles: selectedRoles.value.map(roleName => {
+              const role = roles.value.find(r => r.name === roleName);
+              return role ? role.id : null;
+            }).filter(id => id !== null),
+            selectedDepartments: selectedDepartments.value.map(departmentName => {
+              const department = departments.value.find(r => r.name === departmentName);
+              return department ? department.id : null;
+            }).filter(id => id !== null),
+            selectedSystems: selectedSystems.value.map(systemName => {
+              const system = systems.value.find(r => r.name === systemName);
+              return system ? system.id : null;
+            }).filter(id => id !== null)
+          },
+          withCredentials: true
+        });
+        const userInfo = response.data.map(user => {
+            return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role.name,
+                department: user.department.name,
+            }
+        });
+        user.value = userInfo;
       }
+    } catch (error) {
+      console.error("Error fetching data");
+    }
+    setTimeout(() => {
+        searching.value = false;
+    }, 450);
   }
 
   function viewUser(item) {

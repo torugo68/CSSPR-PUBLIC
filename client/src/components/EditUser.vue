@@ -3,6 +3,7 @@
     class="mx-auto"
     min-width="450px"
     max-width="600px"
+    style="overflow-x: auto;"
     >
       <v-card-title class="custom-title">
         <v-icon class="mr-1">mdi-account</v-icon>
@@ -153,13 +154,7 @@
               </div>
               </v-form>
             </div>
-            <div class="text-center" v-else>
-              <v-progress-circular
-              :size="50"
-              color="primary"
-              indeterminate
-              ></v-progress-circular>
-            </div>
+            <Loading v-else></Loading>
           </v-container>
     </v-card>
   </template>
@@ -171,6 +166,7 @@
   import validator from 'validator';
   
   import { globalState } from '../globalState';
+  import Loading from './Loading.vue';
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';
@@ -248,169 +244,168 @@
     editEmail.value = !editEmail.value
   }
 
-  const submit = handleSubmit(values => {
+  const submit = handleSubmit(async values => {
     loading.value = true;
 
-    setTimeout(async () => {
-      try {
-        let userData = { } 
-        if (oldUserData.value.name !== values.name) {
-          userData = {
-            ...userData,
-            name: values.name
-          }
+    try {
+      let userData = { } 
+      if (oldUserData.value.name !== values.name) {
+        userData = {
+          ...userData,
+          name: values.name
         }
-        if (oldUserData.value.email !== values.email) {
-          userData = {
-            ...userData,
-            email: values.email
-          }
-        }
-        if (oldUserData.value.roleId !== roles.value.find(role => role.name === values.role).id) {
-          userData = {
-            ...userData,
-            roleId: roles.value.find(role => role.name === values.role).id
-          }
-        }
-        if (oldUserData.value.departmentId !== departments.value.find(department => department.name === values.department).id) {
-          userData = {
-            ...userData,
-            departmentId: departments.value.find(department => department.name === values.department).id
-          }
-        }
-        if (Object.keys(userData).length > 0) {
-          await axios.put(`${globalState.apiUrl.value}/api/user/${props.userId}`, userData, {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-        }
-        
-        for (let i = 0; i < systems.value.length; i++) {
-          if (oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && !selectedSystems.value.value.includes(systems.value[i].name)) {
-            let permissionId = oldUserData.value.permissions.find(permission => permission.systemId === systems.value[i].id).id;
-            await axios.delete(`${globalState.apiUrl.value}/api/permission/${permissionId}`, { withCredentials: true })
-            .catch(error => {
-              console.log('Usuário foi criado, porém não foi possivel remover as permissões.');
-            });
-          } else if (!oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && selectedSystems.value.value.includes(systems.value[i].name)) {
-            let newPermission = {
-              userId: props.userId,
-              systemId: systems.value[i].id,
-            }
-            await axios.post(`${globalState.apiUrl.value}/api/permission`, newPermission, { withCredentials: true })
-            .catch(error => {
-              console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
-            });
-          }
-        }
-
-        try {
-          for (let i=0; i < oldUserData.value.sids.length; i++) {
-          if (sids.value[i].value !== oldUserData.value.sids[i].value) {
-            let newSid = {
-              userId: props.userId,
-              sidId: sids.value[i].sidId,
-              value: sids.value[i].value
-            }
-            await axios.put(`${globalState.apiUrl.value}/api/user-sids/${sids.value[i].id}`, newSid, { withCredentials: true })
-              .catch(error => {
-                console.log('Usuário foi salvo, porém não foi possivel atualizar os sids.');
-              });
-            }
-          }
-
-          if (sids.value.length != oldUserData.value.sids.length) {
-            for (let i= oldUserData.value.sids.length; i < sids.value.length; i++) {
-              let newSid = {
-                userId: props.userId,
-                sidId: allSids.value.find(sid => sid.name === sids.value[i].sid.name).id,
-                value: sids.value[i].value
-              }
-
-              await axios.post(`${globalState.apiUrl.value}/api/user-sids`, newSid, { withCredentials: true })
-            }
-          }
-        } catch (error) {
-          console.error('Error saving sids');
-        }
-
-        await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
-        .then(response => {
-          emitEditedUser(response.data);
-        });
-
-        toastr.success('Usuário salvo com sucesso.', null, { timeOut: 470});
-        emitValue(true);  
-      } catch (error) {
-        loading.value = false;
-        toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
-        console.error('Error saving user');
       }
-
-      loading.value = false;
-      }, 1000);
-    });
-    
-  onMounted(() => {
-    loadingComponent.value = true;
-    setTimeout(async () => {
-      try {
-        await axios.get(`${globalState.apiUrl.value}/api/system`, {
+      if (oldUserData.value.email !== values.email) {
+        userData = {
+          ...userData,
+          email: values.email
+        }
+      }
+      if (oldUserData.value.roleId !== roles.value.find(role => role.name === values.role).id) {
+        userData = {
+          ...userData,
+          roleId: roles.value.find(role => role.name === values.role).id
+        }
+      }
+      if (oldUserData.value.departmentId !== departments.value.find(department => department.name === values.department).id) {
+        userData = {
+          ...userData,
+          departmentId: departments.value.find(department => department.name === values.department).id
+        }
+      }
+      if (Object.keys(userData).length > 0) {
+        await axios.put(`${globalState.apiUrl.value}/api/user/${props.userId}`, userData, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
-        }).then(response => { 
-          systems.value = response.data;
         });
-        
-        await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
+      }
+      
+      for (let i = 0; i < systems.value.length; i++) {
+        if (oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && !selectedSystems.value.value.includes(systems.value[i].name)) {
+          let permissionId = oldUserData.value.permissions.find(permission => permission.systemId === systems.value[i].id).id;
+          await axios.delete(`${globalState.apiUrl.value}/api/permission/${permissionId}`, { withCredentials: true })
+          .catch(error => {
+            console.log('Usuário foi criado, porém não foi possivel remover as permissões.');
+          });
+        } else if (!oldUserData.value.permissions.some(permission => permission.systemId === systems.value[i].id) && selectedSystems.value.value.includes(systems.value[i].name)) {
+          let newPermission = {
+            userId: props.userId,
+            systemId: systems.value[i].id,
+          }
+          await axios.post(`${globalState.apiUrl.value}/api/permission`, newPermission, { withCredentials: true })
+          .catch(error => {
+            console.log('Usuário foi criado, porém não foi possivel designar as permissões.');
+          });
+        }
+      }
+
+      try {
+        for (let i=0; i < oldUserData.value.sids.length; i++) {
+        if (sids.value[i].value !== oldUserData.value.sids[i].value) {
+          let newSid = {
+            userId: props.userId,
+            sidId: sids.value[i].sidId,
+            value: sids.value[i].value
+          }
+          await axios.put(`${globalState.apiUrl.value}/api/user-sids/${sids.value[i].id}`, newSid, { withCredentials: true })
+            .catch(error => {
+              console.log('Usuário foi salvo, porém não foi possivel atualizar os sids.');
+            });
+          }
+        }
+
+        if (sids.value.length != oldUserData.value.sids.length) {
+          for (let i= oldUserData.value.sids.length; i < sids.value.length; i++) {
+            let newSid = {
+              userId: props.userId,
+              sidId: allSids.value.find(sid => sid.name === sids.value[i].sid.name).id,
+              value: sids.value[i].value
+            }
+
+            await axios.post(`${globalState.apiUrl.value}/api/user-sids`, newSid, { withCredentials: true })
+          }
+        }
+      } catch (error) {
+        console.error('Error saving sids');
+      }
+
+      await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
+      .then(response => {
+        emitEditedUser(response.data);
+      });
+
+      toastr.success('Usuário salvo com sucesso.', null, { timeOut: 470});
+      emitValue(true);  
+    } catch (error) {
+      toastr.error('Erro ao salvar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
+      console.error('Error saving user');
+    }
+
+  setTimeout( () => {
+    loading.value = false;
+  }, 350);
+  });
+    
+  onMounted(async () => {
+    loadingComponent.value = true;
+    try {
+      await axios.get(`${globalState.apiUrl.value}/api/system`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(response => { 
+        systems.value = response.data;
+      });
+      
+      await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
+      .then(response => {
+        roles.value = response.data;
+      })
+      .catch(error => {
+        console.error('Error fetching roles');
+      });
+      
+      await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
         .then(response => {
-          roles.value = response.data;
+          departments.value = response.data;
         })
         .catch(error => {
-          console.error('Error fetching roles');
-        });
-        
-        await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })
-          .then(response => {
-            departments.value = response.data;
-          })
-          .catch(error => {
-            console.error('Error fetching departments');
-          });
-
-        await axios.get(`${globalState.apiUrl.value}/api/sid`, { withCredentials: true })
-        .then(response => {
-          allSids.value = response.data;
+          console.error('Error fetching departments');
         });
 
-        await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
-        .then(response => {
-            oldUserData.value = response.data;
-            name.value.value = response.data.name
-            email.value.value = response.data.email
-            role.value.value = roles.value.find(role => role.id === response.data.roleId).name
-            department.value.value = departments.value.find(department => department.id === response.data.departmentId).name
-            selectedSystems.value.value = [''].concat(
-              response.data.permissions.map(permission => 
-                systems.value.find(system => system.id === permission.systemId).name
-              )
-            );
-            sids.value = response.data.sids.map(item => ({
-              ...item,
-              activated: false,
-              errorMessage: ''
-            }))
-        });
+      await axios.get(`${globalState.apiUrl.value}/api/sid`, { withCredentials: true })
+      .then(response => {
+        allSids.value = response.data;
+      });
 
+      await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
+      .then(response => {
+          oldUserData.value = response.data;
+          name.value.value = response.data.name
+          email.value.value = response.data.email
+          role.value.value = roles.value.find(role => role.id === response.data.roleId).name
+          department.value.value = departments.value.find(department => department.id === response.data.departmentId).name
+          selectedSystems.value.value = [''].concat(
+            response.data.permissions.map(permission => 
+              systems.value.find(system => system.id === permission.systemId).name
+            )
+          );
+          sids.value = response.data.sids.map(item => ({
+            ...item,
+            activated: false,
+            errorMessage: ''
+          }))
+      });
+
+      setTimeout(() => {
         loadingComponent.value = false;
-      } catch (error) {
-        loadingComponent.value = false;
-      }
-    }, 300);
+      }, 150);
+    } catch (error) {
+      loadingComponent.value = false;
+    }
   });
 
   const NamehasErrorMessages = (watch(() => name.errorMessage.value, (newValue) => {

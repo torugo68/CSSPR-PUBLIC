@@ -15,7 +15,7 @@ import api from './routes/api';
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3001', 'http://10.38.25.67:3000'];
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -44,7 +44,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 3600000 // 1 hour
+    maxAge: 900000 // 15 minutes
   }
 }));
 initPassport(app);

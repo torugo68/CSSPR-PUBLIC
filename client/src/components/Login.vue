@@ -50,41 +50,42 @@
     methods: {
       async sendData() {
         this.loading = true;
-        setTimeout(async () =>{
-          try {
-            const loginData = JSON.stringify({
-                username: this.username,
-                password: this.password
-            });
+        try {
+          const loginData = JSON.stringify({
+              username: this.username,
+              password: this.password
+          });
 
-            await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
-              withCredentials: true,
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
-            .then(response => {
-              if (response.status === 200) {
-                this.loading = false;
-                toastr.success('Login efetuado com sucesso', null, { timeOut: 200 });
-                setTimeout(() => { this.$router.push('/'); }, 300);
-              } 
-              else {
-                toastr.error('Usuário ou senha inválidos');
-                this.loading = false;
-              }
-            })
-            .catch(error => {
-              this.loading = false;
-              toastr.error('Usuário ou senha inválidos');
-            });
-          } 
-          catch (error) {
-            this.loading = false;
-            toastr.error('Usuário ou senha inválidos');
-          }
-        },
-        1000);
+          await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => {
+            if (response.status === 200) {
+              toastr.success('Login efetuado com sucesso', null, { timeOut: 500 });
+              setTimeout(() => { this.$router.push('/'); }, 550);
+            } 
+            else {
+              this.error();
+            }
+          })
+          .catch(error => {
+            this.error();
+          });
+        } 
+        catch (error) {
+          this.error();
+        }
+        setTimeout(() =>{
+          this.loading = false;
+        }, 1000);
+      },
+      async error() {
+        setTimeout(() => {
+          toastr.error('Usuário ou senha inválidos', null, { timeOut: 700 });
+        }, 1000);
       }
     }
   }

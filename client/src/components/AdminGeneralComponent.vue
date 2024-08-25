@@ -20,10 +20,10 @@
         <v-icon small  class="ml-1" @click="toggleCreateDialog">mdi-plus-circle</v-icon>
     </div>
     <v-dialog v-model="dialogCreate" style="max-width:420px; min-width: none;">
-      <create-role-or-department :parentData="tab" @closed="toggleCreateDialog"/>
+      <admin-general-create-item :parentData="tab" @closed="toggleCreateDialog"/>
     </v-dialog>
     <v-dialog v-model="dialogEdit" max-width="50%" width="450px">
-      <create-role-or-department :parentData="tab" :edit="true" :id="currentEditId" @closed="toggleEditDialog"/>
+      <admin-general-create-item :parentData="tab" :edit="true" :id="currentEditId" @closed="toggleEditDialog"/>
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="30%">
       <v-card>
@@ -39,19 +39,32 @@
     </v-dialog>
   </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon
-        class="me-2"
-        size="small"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        size="small"
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
+      <div style="display: flex; gap: 2px; align-items: center;">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="editItem(item)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Editar</v-tooltip>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="deleteItem(item)"
+            >
+              mdi-delete
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Deletar</v-tooltip>
+          </div>
+        </div>
     </template>
     </v-data-table-virtual>
   </template>
@@ -179,10 +192,10 @@ async function fetchData() {
   items.value = data;
 }
 
-onMounted(() => {
+onMounted(async () => {
     loading.value = true;
-    fetchData()
-    setTimeout(async () => {
+    await fetchData()
+    setTimeout(() => {
       tab.value = props.parentData;
       loading.value = false;
     }, 500);

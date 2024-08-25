@@ -105,13 +105,13 @@
     if (!val) close();
     });
 
-    onMounted(() => {
+    onMounted(async () => {
     if (!isMounted.value) {
-        setTimeout(async () => {
         await fetchData();
+        setTimeout(() => {
         isMounted.value = true;
         loading.value = false;
-        }, 600);
+        }, 250);
     }
     });
 

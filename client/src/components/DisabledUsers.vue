@@ -46,33 +46,49 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn variant="text" @click="closeRestore">Cancelar</v-btn>
-                <v-btn color="green" variant="text" @click="restoreItemConfirm">Confirmar</v-btn>
+                <v-btn color="green" variant="text" @click="restoreItemConfirm" :loading="loadingRestore">Confirmar</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
           </v-dialog>
           <v-dialog v-model="dialogView">
-            <view-user :userId="id" :disable="true" />
+            <view-user :userId="id" :disable="true" @closed="closeViewDialog()"/>
           </v-dialog>
         </v-toolbar>
     </template>
       <template v-slot:item.actions="{ item }">
-        <v-icon
-          class="me-2"
-          size="small"
-          @click="viewItem(item)"
-        >
-          mdi-eye
-        </v-icon>
-        <v-icon
-          size="small"
-          @click="restoreItem(item)"
-        >
-          mdi-restore
-        </v-icon>
+        <div style="display: flex; gap: 2px; align-items: center;">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="viewItem(item)"
+            >
+              mdi-eye
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Visualizar</v-tooltip>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="restoreItem(item)"
+            >
+              mdi-restore
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Restaurar</v-tooltip>
+          </div>
+        </div>
       </template>
       </v-data-table>
-    </template>
+      <div v-else>
+        <Loading />
+      </div>
+  </template>
 <script setup>
   import { ref, onMounted, computed, watch} from 'vue';
   import axios from 'axios';
@@ -81,7 +97,9 @@
   import 'toastr/build/toastr.min.css';
 
   import { globalState } from '../globalState';
+  import Loading from './Loading.vue';
 
+  const loadingRestore = ref(false);
   const usersData = ref([]);
   const departments = ref([]);
   const roles = ref([]);
@@ -99,6 +117,7 @@
   });
 
   async function restoreItemConfirm() {
+    loadingRestore.value = true;
     await axios.patch(
       `${globalState.apiUrl.value}/api/user?userId=${id.value}`, 
       { deletedAt: { not: null } }, 
@@ -112,6 +131,7 @@
     });
     fetchData()
     closeRestore();
+    loadingRestore.value = false;
   }
 
   function restoreItem(item) {
@@ -126,6 +146,10 @@
   function viewItem(item) {
     id.value = item.id;
     dialogView.value = true;
+  }
+
+  function closeViewDialog() {
+    dialogView.value = false;
   }
 
   const filteredUsers = computed(() => {
@@ -208,13 +232,14 @@ async function fetchData() {
     console.error("Error fetching data");
     }
     userLog.value = await axios.get(`${globalState.apiUrl.value}/api/logs/?userId=`, { withCredentials: true });
+
+    setTimeout(async () => {
+      loading.value = false;
+    }, 150);
 }
 
   onMounted(() => {
     loading.value = true;
     fetchData()
-      setTimeout(async () => {
-        loading.value = false;
-      }, 500);
   });
 </script>

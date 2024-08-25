@@ -54,12 +54,12 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancelar</v-btn>
-                <v-btn color="red-darken-3" variant="text" @click="deleteItemConfirm">Confirmar</v-btn>
+                <v-btn color="red-darken-3" variant="text" @click="deleteItemConfirm" :loading="loadingDelete">Confirmar</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-dialog v-model="dialogView">
+          <v-dialog v-model="dialogView" @click:outside="toggleViewDialog()">
             <view-user :userId="id" :disable="false" @closed="toggleViewDialog()"/>
           </v-dialog>
           <v-dialog v-model="dialogEdit">
@@ -68,26 +68,44 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-icon
-          class="me-2"
-          size="small"
-          @click="editItem(item)"
-        >
-          mdi-pencil
-        </v-icon>
-        <v-icon
-          size="small"
-          @click="deleteItem(item)"
-        >
-          mdi-delete
-        </v-icon>
-        <v-icon
-          class="me-2 ml-1"
-          size="small"
-          @click="viewItem(item)"
-        >
-          mdi-eye
-        </v-icon>
+        <div style="display: flex; gap: 2px; align-items: center;">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="editItem(item)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Editar</v-tooltip>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="deleteItem(item)"
+            >
+              mdi-delete
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Deletar</v-tooltip>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <v-icon
+              size="small"
+              @click="viewItem(item)"
+            >
+              mdi-eye
+            </v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Visualizar</v-tooltip>
+          </div>
+        </div>
       </template>
     </v-data-table>
     <v-progress-circular
@@ -110,6 +128,7 @@
 
   const isMounted = ref(false)
   const loading = ref(true);
+  const loadingDelete = ref(false);
   const dialog = ref(false);
   const dialogDelete = ref(false);
   const headers = [
@@ -194,13 +213,13 @@
     dialog.value = false;
   };
 
-  onMounted(() => {
+  onMounted(async () => {
     if (!isMounted.value) {
-      setTimeout(async () => {
-        await fetchData();
+      await fetchData();
+      setTimeout(() => {
         isMounted.value = true;
         loading.value = false;
-      }, 600);
+      }, 150);
     }
   });
 
@@ -222,6 +241,7 @@
   }
 
   async function deleteItemConfirm() {
+    loadingDelete.value = true;
     users.value.splice(editedIndex.value, 1);
     const userId = usersData.value.find(user => user.email === editedItem.email).id;
     try {
@@ -237,6 +257,7 @@
       toastr.error('Erro ao deletar usuário', null, { timeOut: 470});
     }
     closeDelete();
+    loadingDelete.value = false;
   }
 
   const dialogEdit = ref(false);

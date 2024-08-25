@@ -3,12 +3,12 @@
     class="mx-auto"
     min-width="450px"
     max-width="550px"
-    :loading="loading"
+    style="overflow-x: auto;"
   >
     <v-card-title class="custom-title" style="display:flex">
       Visualizar Usuário
     </v-card-title>
-    <v-container>
+    <v-container v-if="!loading">
       <v-row>
         <v-col cols="12" >
           <v-icon left class="mb-2">mdi-account</v-icon>
@@ -35,7 +35,12 @@
               v-for="(sid, index) in user?.sids || []"
               :key="index"
             >
-              <p style="font-size: large; font-weight: bold;">{{ user?.sids[index].sid?.name }}: {{ sid?.value }}</p>
+              <div style="display:flex">
+                <p>{{ user?.sids[index].sid?.name }}:</p>
+                <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl" @click.prevent="copyToClipboard(sid?.value)">
+                  <p>{{ sid?.value }}</p>
+                </a>
+              </div>
             </v-list-item>
           </v-list>
         </v-col>
@@ -89,6 +94,9 @@
         class="mt-6"
       ></v-btn>
     </v-container>
+  <div v-else style="height: 100px; display: flex; justify-content: center; align-items: center;">
+    <Loading />
+  </div>
   </v-card>
 </template>
 
@@ -97,6 +105,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 import { globalState } from '../globalState';
+import Loading from './Loading.vue';
 
 const emit = defineEmits(['closed']);
 
@@ -113,6 +122,7 @@ const headers = [
   { text: 'Sistema', value: 'name' },
   { text: 'Permissão', value: 'verified' }
 ];
+const baseUrl = 'https://www.eprotocolo.pr.gov.br/spiweb/consultarProtocoloDigital.do?action=pesquisar';
 
 const props = defineProps({
   userId: Number,
@@ -121,6 +131,15 @@ const props = defineProps({
       default: false
     }
 })
+
+function copyToClipboard(value) {
+  const url = baseUrl;
+  navigator.clipboard.writeText(value).then(() => {
+  }).catch(err => {
+    console.error('Failed to copy');
+  });
+  window.open(url, '_blank');
+}
 
 onMounted(async () => {
   loading.value = true;
@@ -135,9 +154,12 @@ onMounted(async () => {
         systems.value = response.data;
     })
 
-    loading.value = false;
+    setTimeout(() => {
+      loading.value = false;
+    }, 300);
   } catch (error) {
     console.error('Error fetch user data.')
+    loading.value = false;
   }
 });
 </script>

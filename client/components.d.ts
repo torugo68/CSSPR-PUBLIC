@@ -7,6 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdminGeneralComponent: typeof import('./src/components/AdminGeneralComponent.vue')['default']
+    AdminGeneralCreateItem: typeof import('./src/components/AdminGeneralCreateItem.vue')['default']
     AdminRoleOrDepartment: typeof import('./src/components/AdminRoleOrDepartment.vue')['default']
     CreateRoleOrDepartment: typeof import('./src/components/CreateRoleOrDepartment.vue')['default']
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
@@ -17,6 +19,7 @@ declare module 'vue' {
     EditUser: typeof import('./src/components/EditUser.vue')['default']
     FilterUser: typeof import('./src/components/FilterUser.vue')['default']
     FooterBar: typeof import('./src/components/FooterBar.vue')['default']
+    Loading: typeof import('./src/components/Loading.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     NavBar: typeof import('./src/components/NavBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

@@ -175,38 +175,38 @@ const emitValue = () => {
     }
   }
 
-  const submit = handleSubmit(values => {
+  const submit = handleSubmit(async values => {
       loading.value = true;
-      setTimeout(async () => {
-        try {
-          if (props.edit) {
-            if (currentName === 'Admin') {
-              await axios.put(`${fetch}/${props.id}`, 
-              { 
-                username: values.name,
-                ...(allowEditPassword.value && { password: values.password }),
+      try {
+        if (props.edit) {
+          if (currentName === 'Admin') {
+            await axios.put(`${fetch}/${props.id}`, 
+            { 
+              username: values.name,
+              ...(allowEditPassword.value && { password: values.password }),
+            }, 
+            { withCredentials: true });
+          }
+          await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
+          toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 470});
+        } else {
+          if (currentName === 'Admin') {
+            await axios.post(`${globalState.apiUrl.value}/api/auth/signup`, { 
+              username: values.name,
+              password: values.password,
               }, 
               { withCredentials: true });
-            }
-            await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
-            toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 470});
           } else {
-            if (currentName === 'Admin') {
-              await axios.post(`${globalState.apiUrl.value}/api/auth/signup`, { 
-                username: values.name,
-                password: values.password,
-               }, 
-               { withCredentials: true });
-            } else {
-              await axios.post(fetch, { name: values.name }, { withCredentials: true });
-            }
-            toastr.success(`${currentName} criado com sucesso!`, null, { timeOut: 470});
+            await axios.post(fetch, { name: values.name }, { withCredentials: true });
           }
-          emitValue();
-        } catch (error) {
-          toastr.error('Algo deu errado, talvez o nome já exista.', null, { timeOut: 470});
+          toastr.success(`${currentName} criado com sucesso!`, null, { timeOut: 470});
         }
+        emitValue();
+      } catch (error) {
+        toastr.error('Algo deu errado, talvez o nome já exista.', null, { timeOut: 470});
+      }
+      setTimeout(() => {
         loading.value = false;
-      }, 1000);
+      }, 800);
     });
 </script>

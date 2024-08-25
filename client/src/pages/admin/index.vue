@@ -49,11 +49,11 @@
           </v-navigation-drawer>
           <v-main class="fill-height">
             <v-container class="justify-center fill-height">
-              <admin-role-or-department v-if="tab === 0" :parentData="tab"></admin-role-or-department>
-              <admin-role-or-department v-if="tab === 1" :parentData="tab"></admin-role-or-department>
-              <admin-role-or-department v-if="tab === 2" :parentData="tab"></admin-role-or-department>
-              <admin-role-or-department v-if="tab === 3" :parentData="tab"></admin-role-or-department>
-              <admin-role-or-department v-if="tab === 4" :parentData="tab"></admin-role-or-department>
+              <admin-general-component v-if="tab === 0" :parentData="tab"></admin-general-component>
+              <admin-general-component v-if="tab === 1" :parentData="tab"></admin-general-component>
+              <admin-general-component v-if="tab === 2" :parentData="tab"></admin-general-component>
+              <admin-general-component v-if="tab === 3" :parentData="tab"></admin-general-component>
+              <admin-general-component v-if="tab === 4" :parentData="tab"></admin-general-component>
               <DisabledUsers v-if="tab === 5" :parentData="tab"></DisabledUsers>
             </v-container>
           </v-main>

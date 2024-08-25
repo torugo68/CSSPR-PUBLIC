@@ -198,76 +198,75 @@
   const roles = ref([]);
   const systems = ref([]);
 
-  const submit = handleSubmit(values => {
+  const submit = handleSubmit(async values => {
       loading.value = true;
+      try {
+        let userSids = [];
+        let permissions = [];
 
-      setTimeout(async () => {
-          try {
-            let userSids = [];
-            let permissions = [];
+        let userData = {
+          name: values.name,
+          email: values.email,
+          roleId: roles.value.find(role => role.name === values.role).id,
+          departmentId: departments.value.find(department => department.name === values.department).id,
+        };
 
-            let userData = {
-              name: values.name,
-              email: values.email,
-              roleId: roles.value.find(role => role.name === values.role).id,
-              departmentId: departments.value.find(department => department.name === values.department).id,
-            };
+        if (tcc.value) {
+          userSids.push({
+            sidId: 1,
+            value: sid.value.value
+          });
+        }
 
-            if (tcc.value) {
-              userSids.push({
-                sidId: 1,
-                value: sid.value.value
-              });
-            }
+        if (tur.value) {
+          userSids.push({
+            sidId: 2,
+            value: sid.value.value
+          });
+        }
 
-            if (tur.value) {
-              userSids.push({
-                sidId: 2,
-                value: sid.value.value
-              });
-            }
-
-            if (userSids.length > 0) {
-              userData = {
-                ...userData,
-                userSids
-              }
-            }
-            if (selectedSystems.value.value && selectedSystems.value.value.length > 1) {
-              for (let i = 1; i < selectedSystems.value.value.length; i++) {
-                const system = systems.value.find(item => item.name === selectedSystems.value.value[i]);
-                if (system) {
-                  permissions.push({
-                    systemId: system.id,
-                  });
-                }
-              }
-              
-              userData = {
-                ...userData,
-                permissions
-              }
-            }
-
-            await axios.post(`${globalState.apiUrl.value}/api/user`, userData, {
-              withCredentials: true,
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
-            .then(response => {
-              loading.value = false;
-              toastr.success('Usuário criado com sucesso', null, { timeOut: 470});
-              emitValue(response.data);
-            }).catch(e => {
-              loading.value = false;
-              toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
-            });
-          } catch (e) {
-            loading.value = false;
-            toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
+        if (userSids.length > 0) {
+          userData = {
+            ...userData,
+            userSids
           }
-        }, 1000);
+        }
+
+        if (selectedSystems.value.value && selectedSystems.value.value.length > 1) {
+          for (let i = 1; i < selectedSystems.value.value.length; i++) {
+            const system = systems.value.find(item => item.name === selectedSystems.value.value[i]);
+            if (system) {
+              permissions.push({
+                systemId: system.id,
+              });
+            }
+          }
+          
+          userData = {
+            ...userData,
+            permissions
+          }
+        }
+
+        await axios.post(`${globalState.apiUrl.value}/api/user`, userData, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          toastr.success('Usuário criado com sucesso', null, { timeOut: 470});
+          emitValue(response.data);
+        }).catch(e => {
+          toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
+        });
+      } catch (e) {
+        toastr.error('Erro ao criar usuário, talvez já exista outro usuário com mesmo email', null, { timeOut: 470});
+      }
+      
+      setTimeout(async () => {
+        loading.value = false;
+        }, 300);
     });
 
   onMounted(async () => {
