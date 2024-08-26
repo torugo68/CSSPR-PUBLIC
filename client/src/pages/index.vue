@@ -5,7 +5,7 @@
       <data-table-user v-if="tab === 1" />
       <create-user v-else-if="tab === 2" />
       <filter-user v-else-if="tab === 3" />
-      <DataTableLogs v-else />
+      <DataTableLogs v-else-if="tab === 4" />
     </v-container>
     <footer>
       <FooterBar />
@@ -14,8 +14,7 @@
 </template>
 
 <script setup>
-  import FilterUser from '@/components/FilterUser.vue';
-import { ref } from 'vue';
+  import { ref } from 'vue';
 
   const tab = ref(1);
 

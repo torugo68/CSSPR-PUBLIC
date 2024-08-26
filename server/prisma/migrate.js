@@ -1,36 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker/locale/pt_BR';
-import * as fs from 'fs';
-import * as path from 'path';
+const mysql = require('mysql2');
+const fs = require('fs');
 
-const prisma = new PrismaClient();
-
-const filePath = path.join(__dirname, 'users.json');
-
-if (!fs.existsSync(filePath)) {
-  console.error(`File not found: ${filePath}`);
-  process.exit(1);
-}
-
-const data = fs.readFileSync(filePath, 'utf8');
-const newUsers = JSON.parse(data);
-
-
-async function main() {
-  const operations = [
-    { name: "Criado" },
-    { name: "Excluído" },
-    { name: "Termos Atualizados" },
-    { name: "Atualização de Permissões" },
-    { name: "SID Atualizado" },
-    { name: "Usuario Atualizado" },
-    { name: "Setor criado" },
-    { name: "Grupo criado" },
-    { name: "Setor Atualizado" },
-    { name: "Grupo Atualizado" },
-  ]
-  
-  const departments = [
+const departments = [
     { name: 'ATJ - Assessoria Técnica do Juridica' },
     { name: 'CCP - Câmara de Conciliação de Precatórios' },
     { name: 'CAF - Coordenadoria de Assuntos Fiscais' },
@@ -90,7 +61,7 @@ async function main() {
     { name:  'ADV - Consultivo Autarquias' },
     { name: 'Padrão'}
   ];
-  
+
   const roles = [
     { name: 'Servidor' },
     { name: 'Servidor(Comissão)' },
@@ -100,14 +71,7 @@ async function main() {
     { name: 'Estagiário' },
     { name: 'Padrão'}
   ];
-  
-  const sid = [
-    { name: 'TCC' },
-    { name: 'TUR' },
-    { name: 'Wi-Fi' },
-    { name: 'VPN' },
-  ]
-  
+
   const systems = [
     { name: 'Copel' },
     { name: 'Sipro' },
@@ -122,76 +86,81 @@ async function main() {
     { name: 'Ofício Eletrônico/Arisp' },
   ]
 
-// dev mode
-const admins = [
-  {
-    username: 'admin',
-    password: '$2b$10$a.M4qOUAJbyV40mCJs6uKO2EofDcMu7fsK2th92aDD/aARf4aRMwC',
-  }
-]
+let newUsers = []
+let newPermissions = []
 
-// DISCLAIMER: This is a simple seed script to populate the database with some initial data. Not related to real world data.
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: '',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
-for (const item of roles) {
-  await prisma.role.create({
-    data: item,
-  });
-}
-
-for (const item of departments) {
-  await prisma.department.create({
-    data: item,
-  });
-}
-for (const item of sid) {
-  await prisma.sid.create({
-    data: item,
-  });
-}
-for (const item of systems) {
-  await prisma.system.create({
-    data: item,
-  });
-}
-for (const item of admins) {
-  await prisma.admin.create({
-    data: item,
-  });
-}
-for (const item of operations) {
-  await prisma.operationsTypes.create({
-    data: item,
-  });
-}
- try {
-    for (let i=0; i < newUsers.length; i++) {
-        try {
-          await prisma.user.create({
-            data: {
-              name: newUsers[i].name,
-              email: newUsers[i].email,
-              roleId: newUsers[i].roleId,
-              departmentId: newUsers[i].departmentId,
-            },
-          });
-        } catch (error) {
-          console.error(`EMAIL JA EXISTE!!! ${newUsers[i].email}`);
-        }
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error('Error connecting to MySQL:', err);
+        return;
     }
-    console.log(newUsers.length);
-  } catch (error) {
-    console.error(error);
-  }
-}
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+    console.log('Connected to MySQL!');
 
-// Run Seed Script
-// npx ts-node seed.ts
+    connection.query('SELECT * from controlesistema.usuarios', (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            return;
+        }
+
+        for (let i=0; i < results.length; i++) {
+            const dateString = results[i].data_create;
+            const date = new Date(dateString);
+            const timestamp = date.getTime();
+
+            const newUser = {
+                id: results[i].id,
+                name: results[i].nome,
+                email: results[i].email,
+                roleId: roles.findIndex(role => role.name === results[i].grupo) + 1,
+                departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
+                createAt: timestamp 
+        };  
+        newUsers.push(newUser)
+    }
+
+    connection.query ('SELECT * FROM controlesistema.permissoes', (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            return;
+        }
+
+        for (let i=0; i < results.length; i++) {
+            if (results[i].permissao === 1) {
+                const newPermission = {
+                    userId: results[i].id_usuario,
+                    systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
+                }
+                newPermissions.push(newPermission)
+            }
+        }
+        const permissionsData = JSON.stringify(newPermissions, null, 2);
+        fs.writeFileSync('prisma/permissions.json', permissionsData, 'utf8');
+    })
+    const usersData = JSON.stringify(newUsers, null, 2);
+    fs.writeFileSync('prisma/users.json', usersData, 'utf8');
+
+    console.log('Users have been exported to users.json');
+    console.log('Permissions have been exported to permissions.json');
+    connection.release();
+
+    pool.end((err) => {
+        if (err) {
+            console.error('Error closing the pool:', err);
+        } else {
+            console.log('Pool closed.');
+        }
+    });
+    })
+
+});

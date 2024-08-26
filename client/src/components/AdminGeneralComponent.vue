@@ -17,7 +17,13 @@
   <template v-slot:top>
     <div class="d-flex align-items-center mb-3 mt-5">
         <h5><span class="me-1 ml-2">Adicionar novo {{ headers[0].title }}</span></h5>
-        <v-icon small  class="ml-1" @click="toggleCreateDialog">mdi-plus-circle</v-icon>
+        <div>
+          <v-icon small  class="ml-1" @click="toggleCreateDialog">mdi-plus-circle</v-icon>
+          <v-tooltip
+              activator="parent"
+              location="top"
+            >Adicionar</v-tooltip>
+        </div>
     </div>
     <v-dialog v-model="dialogCreate" style="max-width:420px; min-width: none;">
       <admin-general-create-item :parentData="tab" @closed="toggleCreateDialog"/>

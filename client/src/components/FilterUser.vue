@@ -143,6 +143,10 @@
           </v-dialog>
           <v-btn :disabled="!user || user.length === 0" icon class="me-2" style="color: green;">
             <v-icon @click="exportToCSV">mdi-file-excel</v-icon>
+            <v-tooltip
+              activator="parent"
+              location="top"
+            >Exportar para CSV</v-tooltip>
           </v-btn>
         </v-toolbar>
       </template>
@@ -330,13 +334,15 @@
             }
         });
         user.value = userInfo;
+      } else {
+        toastr.warning('Por favor, insira um nome ou e-mail, ou aplique um filtro para refinar sua busca.', null, { timeOut: 1500, progressBar: true, preventDuplicates:true});
       }
     } catch (error) {
       console.error("Error fetching data");
     }
     setTimeout(() => {
         searching.value = false;
-    }, 450);
+    }, 1000);
   }
 
   function viewUser(item) {
