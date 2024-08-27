@@ -69,7 +69,8 @@ const departments = [
     { name: 'Terceirizado' },
     { name: 'Advogado' },
     { name: 'Estagiário' },
-    { name: 'Padrão'}
+    { name: 'Padrão'},
+    { name: 'Externo'}
   ];
 
   const systems = [
@@ -86,8 +87,16 @@ const departments = [
     { name: 'Ofício Eletrônico/Arisp' },
   ]
 
+  const sids = [
+    { name: 'TermoTur' },
+    { name: 'TermoTcc' },
+    { name: 'Wi-Fi' },
+    { name: 'VPN' },
+  ]
+
 let newUsers = []
 let newPermissions = []
+let newSids = []
 
 const pool = mysql.createPool({
     host: 'localhost',
@@ -126,7 +135,17 @@ pool.getConnection((err, connection) => {
                 departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
                 createAt: timestamp 
         };  
-        newUsers.push(newUser)
+
+        if (roles.findIndex(role => role.name === results[i].grupo) + 1 === 0) {
+            console.log(`Grupo não encontrado: ${results[i].grupo} || id: ${results[i].id}`)
+        }
+        if (departments.findIndex(setor => setor.name === results[i].setor) + 1 === 0) {
+            console.log(`Setor não encontrado: ${results[i].setor} || id: ${results[i].id}`)
+        }
+
+        if (newUser.roleId !== 0 && newUser.departmentId !== 0) {
+            newUsers.push(newUser);
+        }
     }
 
     connection.query ('SELECT * FROM controlesistema.permissoes', (err, results) => {
@@ -141,19 +160,78 @@ pool.getConnection((err, connection) => {
                     userId: results[i].id_usuario,
                     systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
                 }
-                newPermissions.push(newPermission)
+                if (newPermission.systemId !== 0){
+                    newPermissions.push(newPermission)
+                } else {
+                    console.log(`Sistema não encontrado: ${results[i].sistemas} || id_usuario: ${results[i].id_usuario}`)
+                }
             }
         }
         const permissionsData = JSON.stringify(newPermissions, null, 2);
         fs.writeFileSync('prisma/permissions.json', permissionsData, 'utf8');
     })
+
+    connection.query ('SELECT * FROM controlesistema.sid', (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            return;
+        }
+        for (let i=0; i < results.length; i++) {
+            if (results[i].valorSid !== null || results[i].valorSid !== '') {
+
+            }
+            const newSid = {
+                sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
+                userId: results[i].id_usuario,
+                value: results[i].valorSid
+            }
+            if (sids.findIndex(sid => sid.name === results[i].nomeSid) + 1 === 0) {
+                console.log(`Sid não encontrado: ${results[i].nomeSid} || id_usuario: ${results[i].id_usuario}`)
+            }
+            newSids.push(newSid)
+        }
+        const sidData = JSON.stringify(newSids, null, 2);
+        fs.writeFileSync('prisma/sids.json', sidData, 'utf8');
+    })
+
+    connection.query('SELECT * from controlesistema.desativados', (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            return;
+        }
+    
+        for (let i = 0; i < results.length; i++) {
+            const dateString = results[i].data_exclusao;
+            const date = new Date(dateString);
+            const timestamp = date.getTime();
+    
+            const newUser = {
+                name: results[i].nome,
+                email: results[i].email,
+                roleId: roles.findIndex(role => role.name === results[i].grupo) + 1,
+                departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
+                deleteAt: timestamp 
+            };
+    
+            if (results[i].permissao === 1) {
+                if (newPermissions.findIndex(permission => permission.systemId === systems.findIndex(system => system.name === results[i].sistemas) + 1) === 0) {
+                    const newPermission = {
+                        userId: -1,
+                        systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
+                    };
+                    newPermissions.push(newPermission);
+                    console.log(newPermission);
+                }
+            }
+        }
+    });
+
     const usersData = JSON.stringify(newUsers, null, 2);
     fs.writeFileSync('prisma/users.json', usersData, 'utf8');
 
-    console.log('Users have been exported to users.json');
-    console.log('Permissions have been exported to permissions.json');
+    
     connection.release();
-
+    
     pool.end((err) => {
         if (err) {
             console.error('Error closing the pool:', err);
@@ -161,6 +239,10 @@ pool.getConnection((err, connection) => {
             console.log('Pool closed.');
         }
     });
-    })
+})
+
+console.log('Users have been exported to users.json');
+console.log('Permissions have been exported to permissions.json');
+console.log('Sids have been exported to sids.json');
 
 });
