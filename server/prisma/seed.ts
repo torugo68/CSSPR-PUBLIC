@@ -5,15 +5,32 @@ import * as path from 'path';
 
 const prisma = new PrismaClient();
 
-const filePath = path.join(__dirname, 'users.json');
+const usersFilePath = path.join(__dirname, 'users.json');
+const permissionsFilePath = path.join(__dirname, 'permissions.json');
+const sidsFilePath = path.join(__dirname, 'sids.json');
+const LogsFilePath = path.join(__dirname, 'logs.json');
 
-if (!fs.existsSync(filePath)) {
-  console.error(`File not found: ${filePath}`);
+if (!fs.existsSync(usersFilePath)) {
+  console.error(`File not found: ${usersFilePath}`);
+  process.exit(1);
+}
+if (!fs.existsSync(permissionsFilePath)) {
+  console.error(`File not found: ${permissionsFilePath}`);
+  process.exit(1);
+}
+if (!fs.existsSync(sidsFilePath)) {
+  console.error(`File not found: ${sidsFilePath}`);
+  process.exit(1);
+}
+if (!fs.existsSync(LogsFilePath)) {
+  console.error(`File not found: ${LogsFilePath}`);
   process.exit(1);
 }
 
-const data = fs.readFileSync(filePath, 'utf8');
-const newUsers = JSON.parse(data);
+const newUsers = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
+const newPermissions = JSON.parse(fs.readFileSync(permissionsFilePath, 'utf8'));
+const newSids = JSON.parse(fs.readFileSync(sidsFilePath, 'utf8'));
+const newLogs = JSON.parse(fs.readFileSync(LogsFilePath, 'utf8'));
 
 
 async function main() {
@@ -98,7 +115,8 @@ async function main() {
     { name: 'Terceirizado' },
     { name: 'Advogado' },
     { name: 'Estagiário' },
-    { name: 'Padrão'}
+    { name: 'Padrão'},
+    { name: 'Externo'}
   ];
   
   const sid = [
@@ -168,14 +186,98 @@ for (const item of operations) {
         try {
           await prisma.user.create({
             data: {
+              id: newUsers[i].id,
               name: newUsers[i].name,
               email: newUsers[i].email,
               roleId: newUsers[i].roleId,
               departmentId: newUsers[i].departmentId,
+              createdAt: newUsers[i].createdAt,
             },
           });
         } catch (error) {
           console.error(`EMAIL JA EXISTE!!! ${newUsers[i].email}`);
+        }
+    }
+    console.log(newUsers.length);
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    for (let i=0; i < newPermissions.length; i++) {
+        try {
+          await prisma.permission.create({
+            data: {
+              userId: newPermissions[i].userId,
+              systemId: newPermissions[i].systemId,
+            },
+          });
+        } catch (error) {
+          console.error(`ERRO NA PERMISSIAO!!!`);
+          console.log(newPermissions[i])
+        }
+    }
+    console.log(newUsers.length);
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    for (let i=0; i < newSids.length; i++) {
+        try {
+          const newSid = {
+            userId: newSids[i].userId,
+            sidId: newSids[i].sidId,
+            value: newSids[i].value
+          };
+        
+          // Check if userId exists
+          const userExists = await prisma.user.findUnique({
+            where: { id: newSid.userId }
+          });
+        
+          if (!userExists) {
+            throw new Error(`User with ID ${newSid.userId} does not exist.`);
+          }
+        
+          const sidExists = await prisma.sid.findUnique({
+            where: { id: newSid.sidId }
+          });
+        
+          if (!sidExists) {
+            throw new Error(`SID with ID ${newSid.sidId} does not exist.`);
+          }
+        
+          await prisma.userSids.create({
+            data: newSid,
+          });
+        } catch (error) {
+          console.error(`ERRO NO SID!!! ${newSids[i]} || ${newSids[i].value} || ${newSids[i].userId} || ${newSids[i].userId} || ${error}`);
+        }
+    }
+    console.log(newUsers.length);
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    for (let i=0; i < newLogs.length; i++) {
+        try {
+          const newLog = {
+            name: newLogs[i].name,
+            email: newLogs[i].email,
+            operation: newLogs[i].operationType,
+            role: newLogs[i].role,
+            admin: newLogs[i].admin,
+            createdAt: new Date(newLogs[i].date),
+          };
+        
+          await prisma.logs.create({
+            data: newLog,
+          });
+        } catch (error) {
+          console.error(`ERRO NO Log!!! ${newLogs[i]}`);
+          console.error(error);
         }
     }
     console.log(newUsers.length);

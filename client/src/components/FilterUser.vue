@@ -204,7 +204,8 @@
 
   function reset() {
     selectedRoles.value = [];
-    selectedDepartments.value = []
+    selectedDepartments.value = [];
+    selectedSystems.value = [];
   }
 
 

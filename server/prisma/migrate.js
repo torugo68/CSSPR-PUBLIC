@@ -97,6 +97,8 @@ const departments = [
 let newUsers = []
 let newPermissions = []
 let newSids = []
+let newDisabledUsers = []
+let newLogs = []
 
 const pool = mysql.createPool({
     host: 'localhost',
@@ -177,18 +179,18 @@ pool.getConnection((err, connection) => {
             return;
         }
         for (let i=0; i < results.length; i++) {
-            if (results[i].valorSid !== null || results[i].valorSid !== '') {
-
+            const isValidSid = /^\d{2}\.\d{3}\.\d{3}-\d{1}$/.test(results[i].valorSid);
+            if (results[i].valorSid !== null && results[i].valorSid !== '' && results[i].valorSid !== undefined && isValidSid) {
+                const newSid = {
+                    sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
+                    userId: results[i].id_usuario,
+                    value: results[i].valorSid
+                }
+                if (sids.findIndex(sid => sid.name === results[i].nomeSid) + 1 === 0) {
+                    console.log(`Sid não encontrado: ${results[i].nomeSid} || id_usuario: ${results[i].id_usuario}`)
+                }
+                newSids.push(newSid)
             }
-            const newSid = {
-                sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
-                userId: results[i].id_usuario,
-                value: results[i].valorSid
-            }
-            if (sids.findIndex(sid => sid.name === results[i].nomeSid) + 1 === 0) {
-                console.log(`Sid não encontrado: ${results[i].nomeSid} || id_usuario: ${results[i].id_usuario}`)
-            }
-            newSids.push(newSid)
         }
         const sidData = JSON.stringify(newSids, null, 2);
         fs.writeFileSync('prisma/sids.json', sidData, 'utf8');
@@ -212,18 +214,44 @@ pool.getConnection((err, connection) => {
                 departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
                 deleteAt: timestamp 
             };
-    
-            if (results[i].permissao === 1) {
-                if (newPermissions.findIndex(permission => permission.systemId === systems.findIndex(system => system.name === results[i].sistemas) + 1) === 0) {
-                    const newPermission = {
-                        userId: -1,
-                        systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
-                    };
-                    newPermissions.push(newPermission);
-                    console.log(newPermission);
+
+            if (!newDisabledUsers.some(user => user.email === newUser.email)) {
+                if (newUser.departmentId !== 0) {
+                    newDisabledUsers.push(newUser);
                 }
             }
         }
+        const disabledUsersData = JSON.stringify(newDisabledUsers, null, 2);
+        fs.writeFileSync('prisma/disabled.json', disabledUsersData, 'utf8');
+    });
+
+    connection.query('SELECT * from controlesistema.logsusuarios', (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            return;
+        }
+        
+        for (let i = 0; i < results.length; i++) {
+            const dateString = results[i].data_operacao;
+            const date = new Date(dateString);
+            const timestamp = date.getTime();
+
+            const newLog = {
+                name: results[i].nome_usuario,
+                email: results[i].email_usuario,
+                operationType: results[i].tipo_operacao,
+                role: results[i].grupo_usuario,
+                admin: results[i].nome_admin,
+                date: timestamp
+            }
+            if (newLog.name && newLog.email && newLog.role && newLog.admin && newLog.operationType && newLog.date) { 
+                newLogs.push(newLog);
+            } else {
+                console.log(`Log inválido: ${newLog.name} || ${newLog.email} || ${newLog.role} || ${newLog.admin} || ${newLog.operationType} || ${newLog.date}`)
+            }
+        }
+        const newLogsData = JSON.stringify(newLogs, null, 2);
+        fs.writeFileSync('prisma/logs.json', newLogsData, 'utf8');
     });
 
     const usersData = JSON.stringify(newUsers, null, 2);
@@ -244,5 +272,6 @@ pool.getConnection((err, connection) => {
 console.log('Users have been exported to users.json');
 console.log('Permissions have been exported to permissions.json');
 console.log('Sids have been exported to sids.json');
+console.log('Disableds have been exported to disabled.json');
 
 });

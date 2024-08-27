@@ -22,9 +22,11 @@
         density="compact" placeholder="Senha" prepend-inner-icon="mdi-lock-outline" variant="outlined"
         @click:append-inner="visible = !visible">
       </v-text-field>
+      <!--
       <a class="text-caption text-decoration-none text-blue" href="#" rel="noopener noreferrer" target="_blank">
         Esqueceu a senha?
       </a>
+      -->
       <v-btn :loading="loading" @click="sendData" block class="mb-8 mt-3" color="blue" size="large" variant="tonal">
         Entrar
       </v-btn>

@@ -133,7 +133,6 @@
                       v-model="item.value"
                         :label="item.sid.name"
                         :error-messages="item.errorMessage"
-                        clearable
                         variant="underlined"
                         class="mb-3 custom-text-field"
                         @input="validateSid(item.value, index)"

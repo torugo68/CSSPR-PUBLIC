@@ -152,18 +152,6 @@ export const findOne = async (req: Request, res: Response) => {
                 deletedAt: disableBoolean ? { not: null } : null
             },
             include: {
-                logs: {
-                    where: {
-                        operationId: 2
-                    },
-                    include: {
-                        admin: {
-                            select: {
-                                username: true
-                            }
-                        }
-                    }
-                },
                 permissions: true,
                 role: {
                     select: {
@@ -250,18 +238,6 @@ export const findAll = async (req: Request, res: Response) => {
         let users = await prisma.user.findMany({
             where: databaseQuery,
             include: {
-                logs: {
-                    where: {
-                        operationId: 2
-                    },
-                    include: {
-                        admin: {
-                            select: {
-                                username: true
-                            }
-                        }
-                    }
-                },
                 permissions: true,
                 role: {
                     select: {

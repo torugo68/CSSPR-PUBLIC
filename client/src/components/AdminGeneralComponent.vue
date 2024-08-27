@@ -184,13 +184,17 @@ const confirmDelete = async () => {
   };
 
 async function checkIfCanDelete(id) {
-  await axios.get(`${fetch}/check/${id}`, { withCredentials: true })
-    .then((response) => {
-      allowedToDelete.value = true;
-    }).catch((error) => {
-      console.error('Error checking if can delete');
-      allowedToDelete.value = false;
-    });
+  if (headers[0].title === 'Admin') {
+    allowedToDelete.value = true;
+  } else {
+    await axios.get(`${fetch}/check/${id}`, { withCredentials: true })
+      .then((response) => {
+        allowedToDelete.value = true;
+      }).catch((error) => {
+        console.error('Error checking if can delete');
+        allowedToDelete.value = false;
+      });
+  }
 }
 
 async function fetchData() {

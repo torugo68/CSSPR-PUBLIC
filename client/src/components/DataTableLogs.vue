@@ -3,7 +3,6 @@
       class="data-table"
       :headers="headers"
       :items="filteredLogs"
-      :sort-by="[{ key: 'date', order: 'desc' }]"
       v-if="!loading"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
     >
@@ -138,15 +137,14 @@
             await axios.get(`${globalState.apiUrl.value}/api/logs`, { withCredentials: true })
             .then((response) => {
               const logsInfo = response.data.map(log => {
-                if (log.user) {
+                if (log) {
                   return {
-                    admin: log.admin.username,
-                    name: log.user.name,
-                    email: log.user.email,
-                    role: log.user.role.name,
-                    department: log.user.department.name,
+                    admin: log.admin,
+                    name: log.name,
+                    email: log.email,
+                    role: log.role,
                     date: formatDate(log.createdAt),
-                    operation: log.operation.name,
+                    operation: log.operation,
                   }
                 }
               });
