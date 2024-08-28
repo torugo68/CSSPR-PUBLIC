@@ -9,6 +9,7 @@ const usersFilePath = path.join(__dirname, 'users.json');
 const permissionsFilePath = path.join(__dirname, 'permissions.json');
 const sidsFilePath = path.join(__dirname, 'sids.json');
 const LogsFilePath = path.join(__dirname, 'logs.json');
+const DisabledFilePath = path.join(__dirname, 'disabled.json');
 
 if (!fs.existsSync(usersFilePath)) {
   console.error(`File not found: ${usersFilePath}`);
@@ -26,12 +27,16 @@ if (!fs.existsSync(LogsFilePath)) {
   console.error(`File not found: ${LogsFilePath}`);
   process.exit(1);
 }
+if (!fs.existsSync(DisabledFilePath)) {
+  console.error(`File not found: ${DisabledFilePath}`);
+  process.exit(1);
+}
 
 const newUsers = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
 const newPermissions = JSON.parse(fs.readFileSync(permissionsFilePath, 'utf8'));
 const newSids = JSON.parse(fs.readFileSync(sidsFilePath, 'utf8'));
 const newLogs = JSON.parse(fs.readFileSync(LogsFilePath, 'utf8'));
-
+const newDisableds = JSON.parse(fs.readFileSync(DisabledFilePath, 'utf8'));
 
 async function main() {
   const operations = [
@@ -277,6 +282,40 @@ for (const item of operations) {
           });
         } catch (error) {
           console.error(`ERRO NO Log!!! ${newLogs[i]}`);
+          console.error(error);
+        }
+    }
+    console.log(newUsers.length);
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    for (let i=0; i < newDisableds.length; i++) {
+        try {
+          const newUser = {
+            name: newDisableds[i].name,
+            email: newDisableds[i].email,
+            roleId: newDisableds[i].roleId,
+            departmentId: newDisableds[i].departmentId,
+            deletedAt: new Date(newDisableds[i].deleteAt),
+          };
+          console.log("Email desativado: ", newDisableds[i].email)
+          const oldUser = await prisma.user.findUnique({
+            where: { email: newDisableds[i].email }
+          });
+          if (!oldUser){
+            await prisma.user.create({
+              data: newUser,
+            });
+            console.log("CRIADO DESATIVADO ")
+          } else {
+            console.log("Desativado já existe:")
+            console.error(newLogs[i]);
+            console.log("OLD: ")
+            console.error(oldUser);
+          }
+        } catch (error) {
           console.error(error);
         }
     }

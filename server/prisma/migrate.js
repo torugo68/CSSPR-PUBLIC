@@ -99,6 +99,7 @@ let newPermissions = []
 let newSids = []
 let newDisabledUsers = []
 let newLogs = []
+let newDisabledPermissions = []
 
 const pool = mysql.createPool({
     host: 'localhost',
@@ -215,6 +216,14 @@ pool.getConnection((err, connection) => {
                 deleteAt: timestamp 
             };
 
+            if (results[i].permissao === 1) {
+                const newPermission = {
+                    userId: results[i].id_usuario,
+                    systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
+                }
+                newDisabledPermissions.push(newPermission)
+            }
+
             if (!newDisabledUsers.some(user => user.email === newUser.email)) {
                 if (newUser.departmentId !== 0) {
                     newDisabledUsers.push(newUser);
@@ -222,7 +231,9 @@ pool.getConnection((err, connection) => {
             }
         }
         const disabledUsersData = JSON.stringify(newDisabledUsers, null, 2);
+        const disabledUsersPermissionsData = JSON.stringify(newDisabledPermissions, null, 2);
         fs.writeFileSync('prisma/disabled.json', disabledUsersData, 'utf8');
+        fs.writeFileSync('prisma/disabled-permissions.json', disabledUsersPermissionsData, 'utf8');
     });
 
     connection.query('SELECT * from controlesistema.logsusuarios', (err, results) => {

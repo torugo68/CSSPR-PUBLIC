@@ -175,6 +175,20 @@ export const findOne = async (req: Request, res: Response) => {
                         }
                     }
                 },
+                Logs: {
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                    select: {
+                        operation: true,
+                        createdAt: true,
+                        admin: {
+                            select: {
+                                username: true,
+                            }
+                        }
+                    }
+                }
             }
         });
         res.status(200).json(user);

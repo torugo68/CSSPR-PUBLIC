@@ -42,7 +42,10 @@ async function log(adminId:any, userId:any, operation:any) {
                     email: user.email,
                     role: user.role.name,
                     operation: operationName.name,
-                    adminName: admin.username
+                    operationId: operation,
+                    adminName: admin.username,
+                    adminId: adminId,
+                    userId: userId,
                 }
             });
         } else {

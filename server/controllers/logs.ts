@@ -18,6 +18,11 @@ export const findAll = async (req: Request, res: Response) => {
                         username: true,
                     },
                 },
+                operationType: {
+                    select: {
+                        name: true,
+                    },
+                }
             },
         });
         res.status(200).json(logs);

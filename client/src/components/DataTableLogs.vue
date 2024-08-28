@@ -120,8 +120,10 @@
     dialog.value = false;
     }
 
-    function formatDate(isoDate) {
+    const formatDate = (isoDate) => {
+      if (!isoDate) return null;
       const date = new Date(isoDate);
+      if (isNaN(date.getTime())) return null; 
       return new Intl.DateTimeFormat('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -130,18 +132,27 @@
         minute: '2-digit',
         second: '2-digit',
         hour12: false,
-        timeZone: 'UTC'
+        timeZone: 'America/Sao_Paulo' 
       }).format(date);
-    }
+    };
 
     async function fetchData() {
         try {
             await axios.get(`${globalState.apiUrl.value}/api/logs`, { withCredentials: true })
             .then((response) => {
               const logsInfo = response.data.map(log => {
-                if (log) {
+                if (log && log.adminName) {
                   return {
-                    admin: log.admin,
+                    admin: log.adminName,
+                    name: log.name,
+                    email: log.email,
+                    role: log.role,
+                    date: formatDate(log.createdAt),
+                    operation: log.operation,
+                  } 
+                } else if (log && log.admin) {
+                  return {
+                    admin: log.admin.username,
                     name: log.name,
                     email: log.email,
                     role: log.role,

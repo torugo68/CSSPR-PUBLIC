@@ -3,10 +3,10 @@
       class="data-table"
       :headers="headers"
       :items="filteredUsers"
-      :sort-by="[{ key: 'email', order: 'asc' }]"
       v-if="!loading"
       :items-per-page="25"
-      style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
+      :items-per-page-options="[20, 50, 100]"
+      style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%; max-height: 900px;"
       itemsPerPageText="Usuários desativados por página"
       :loading="loading"
       item-value="name"
@@ -171,25 +171,27 @@
     { title: 'Grupo', key: 'roleId' },
     { title: 'Setor', key: 'departmentId' },
     { title: 'Data da exclusão', key: 'deleteAt' },
-    { title: 'Admin', key: 'admin' },
     { title: 'Ações', key: 'actions', sortable: false },
   ];
 
 const loading = ref(false);
 
-function formatDate(isoDate) {
-    const date = new Date(isoDate);
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-      timeZone: 'UTC'
-    }).format(date);
-  }
+const formatDate = (isoDate) => {
+  if (!isoDate) return null;
+  const date = new Date(isoDate);
+  if (isNaN(date.getTime())) return null; 
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'America/Sao_Paulo' 
+  }).format(date);
+};
+
 async function fetchData() {
   try {
     const users = await axios.get(`${globalState.apiUrl.value}/api/user?disable=true`, {
@@ -215,8 +217,6 @@ async function fetchData() {
             console.error('Error fetching departments');
             });
 
-        
-
         const userInfo = users.data.map(user => {
             return {
               id: user.id,
@@ -224,16 +224,20 @@ async function fetchData() {
               email: user.email,
               roleId: roles.value.find(role => role.id === user.roleId).name,
               departmentId: departments.value.find(department => department.id === user.departmentId).name,
-              deleteAt: formatDate(user.createdAt),
+              deleteAt: formatDate(user.deletedAt),
             }
         });
 
         usersData.value = userInfo;
     } catch (error) {
-    console.error("Error fetching data");
+    console.error("Error fetching data", error);
     }
     userLog.value = await axios.get(`${globalState.apiUrl.value}/api/logs/?userId=`, { withCredentials: true });
-
+    userLog.value.data.sort((a, b) => {
+      const dateA = new Date(a.deletedAt);
+      const dateB = new Date(b.deletedAt);
+      return dateA - dateB; 
+    });
     setTimeout(async () => {
       loading.value = false;
     }, 150);

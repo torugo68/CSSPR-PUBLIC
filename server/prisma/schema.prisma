@@ -84,6 +84,7 @@ model UserSids {
 model OperationsTypes {
   id        Int       @id @default(autoincrement())
   name      String    @unique
+  Logs Logs[]
 }
 
 model Logs {
@@ -97,5 +98,7 @@ model Logs {
   adminId   Int?
   user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade)
   userId    Int?
+  operationType OperationsTypes? @relation(fields: [operationId], references: [id], onUpdate: Cascade)
+  operationId Int?
   createdAt DateTime   @default(now())
 }
