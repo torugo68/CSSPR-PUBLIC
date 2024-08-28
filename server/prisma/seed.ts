@@ -268,7 +268,7 @@ for (const item of operations) {
             email: newLogs[i].email,
             operation: newLogs[i].operationType,
             role: newLogs[i].role,
-            admin: newLogs[i].admin,
+            adminName: newLogs[i].admin,
             createdAt: new Date(newLogs[i].date),
           };
         

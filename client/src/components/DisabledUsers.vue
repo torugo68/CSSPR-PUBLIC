@@ -215,6 +215,8 @@ async function fetchData() {
             console.error('Error fetching departments');
             });
 
+        
+
         const userInfo = users.data.map(user => {
             return {
               id: user.id,
@@ -223,7 +225,6 @@ async function fetchData() {
               roleId: roles.value.find(role => role.id === user.roleId).name,
               departmentId: departments.value.find(department => department.id === user.departmentId).name,
               deleteAt: formatDate(user.createdAt),
-              admin: user.logs.length > 0 && user.logs[0].admin ? user.logs[0].admin.username : "Não"
             }
         });
 

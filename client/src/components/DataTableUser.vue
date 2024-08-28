@@ -5,7 +5,8 @@
       :items="filteredUsers"
       :sort-by="[{ key: 'email', order: 'asc' }]"
       v-if="!loading"
-      :items-per-page="25"
+      :items-per-page="50"
+      :items-per-page-options="[20, 50, 100]"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
       itemsPerPageText="Usuários por página"
     >

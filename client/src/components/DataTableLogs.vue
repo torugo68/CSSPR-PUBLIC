@@ -3,6 +3,8 @@
       class="data-table"
       :headers="headers"
       :items="filteredLogs"
+      :items-per-page="50"
+      :items-per-page-options="[20, 50, 100]"
       v-if="!loading"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
     >
