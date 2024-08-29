@@ -8,7 +8,7 @@ const usersFilePath = path.join(__dirname, 'users.json');
 const permissionsFilePath = path.join(__dirname, 'permissions.json');
 const sidsFilePath = path.join(__dirname, 'sids.json');
 const LogsFilePath = path.join(__dirname, 'logs.json');
-const DisabledFilePath = path.join(__dirname, 'disabled.json');
+const DisabledFilePath = path.join(__dirname, 'disabled-users.json');
 const DisabledPermissionsFilePath = path.join(__dirname, 'disabled-permissions.json');
 const DisabledSidsFilePath = path.join(__dirname, 'disabled-sids.json');
 
@@ -136,8 +136,8 @@ async function main() {
   ];
   
   const sid = [
-    { name: 'TCC' },
     { name: 'TUR' },
+    { name: 'TCC' },
     { name: 'Wi-Fi' },
     { name: 'VPN' },
   ]
@@ -311,7 +311,6 @@ for (const item of operations) {
             departmentId: newDisableds[i].departmentId,
             deletedAt: new Date(newDisableds[i].deleteAt),
           };
-          console.log("Email desativado: ", newDisableds[i].email)
           const oldUser = await prisma.user.findUnique({
             where: { email: newDisableds[i].email }
           });
@@ -339,7 +338,7 @@ for (const item of operations) {
     for (let i=0; i < newDisabledsPermissions.length; i++) {
         try {
           const user = await prisma.user.findUnique({
-            where: { email: newDisabledsPermissions[i].email }
+            where: { email: newDisabledsPermissions[i].user.email }
           });
 
           if (user) {
@@ -358,17 +357,16 @@ for (const item of operations) {
           console.error(error);
         }
     }
-    console.log(newUsers.length);
+    console.log("Permissoes dos Desativados criados, total: ", newDisabledsPermissions.length);
   } catch (error) {
     console.error(error);
   }
-  console.log("Permissoes dos Desativados criados, total: ", newDisabledsPermissions.length);
 
   try {
     for (let i=0; i < newDisabledsSids.length; i++) {
         try {
           const user = await prisma.user.findUnique({
-            where: { email: newDisabledsSids[i].email }
+            where: { email: newDisabledsSids[i].user.email }
           });
 
           if (user) {
@@ -393,7 +391,6 @@ for (const item of operations) {
           console.error(error);
         }
     }
-    console.log(newUsers.length);
   } catch (error) {
     console.error(error);
   }

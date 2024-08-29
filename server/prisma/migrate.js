@@ -150,9 +150,12 @@ pool.getConnection((err, connection) => {
         if (newUser.roleId !== 0 && newUser.departmentId !== 0) {
             newUsers.push(newUser);
         } else {
-            console.log(`Usuário inv válido: ${newUser.name} || ${newUser.email} || ${newUser.roleId} || ${newUser.departmentId}`)
+            console.log(`Usuário inválido: ${newUser.name} || ${newUser.email} || ${newUser.roleId} || ${newUser.departmentId}`)
         }
     }
+
+    const usersData = JSON.stringify(newUsers, null, 2);
+    fs.writeFileSync('prisma/users.json', usersData, 'utf8');
     console.log("\x1b[42m", 'Users successfully imported', "\x1b[0m");
 
     connection.query ('SELECT * FROM controlesistema.permissoes', (err, results) => {
@@ -203,70 +206,6 @@ pool.getConnection((err, connection) => {
     })
     console.log("\x1b[42m", 'Users sids successfully imported', "\x1b[0m");
 
-    connection.query('SELECT * from controlesistema.desativados', (err, results) => {
-        if (err) {
-            console.error('Error querying MySQL:', err);
-            return;
-        }
-    
-        for (let i = 0; i < results.length; i++) {
-            const dateString = results[i].data_exclusao;
-            const date = new Date(dateString);
-            const timestamp = date.getTime();
-    
-            const newUser = {
-                name: results[i].nome,
-                email: results[i].email,
-                roleId: roles.findIndex(grupo => grupo.name.includes(results[i].grupo)) + 1,
-                departmentId: departments.findIndex(setor => setor.name.includes(results[i].setor)) + 1,
-                deleteAt: timestamp 
-            };
-
-            if (results[i].permissao === 1 || results[i].permissao === '1') {
-                const newPermission = {
-                    email: results[i].email,
-                    systemId: systems.findIndex(system => system.name === results[i].sistema) + 1,
-                }
-                if (systems.findIndex(system => system.name === results[i].sistema) + 1 !== 0){
-                    if (newDisabledPermissions.findIndex(permission => 
-                        permission.email === newPermission.email && 
-                        permission.systemId === newPermission.systemId
-                    ) === -1) {
-                        newDisabledPermissions.push(newPermission);
-                    }
-                }
-            }
-
-            if (results[i].valorSid !== null && results[i].valorSid !== 'Nulo' && results[i].valorSid !== '' && results[i].valorSid !== undefined) {
-                const newSid = {
-                    email: results[i].email,
-                    value: results[i].valorSid,
-                    sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
-                }
-                if (newDisabledSids.findIndex(sid => 
-                    sid.value === newSid.value && 
-                    sid.email === newSid.email &&
-                    sid.sidId === newSid.sidId
-                ) === -1) {
-                    newDisabledSids.push(newSid);
-                }
-            }
-
-            if (!newDisabledUsers.some(user => user.email === newUser.email)) {
-                if (newUser.departmentId !== 0) {
-                    newDisabledUsers.push(newUser);
-                }
-            }
-        }
-        const disabledUsersData = JSON.stringify(newDisabledUsers, null, 2);
-        const disabledUsersPermissionsData = JSON.stringify(newDisabledPermissions, null, 2);
-        const disabledUsersSidsData = JSON.stringify(newDisabledSids, null, 2);
-        fs.writeFileSync('prisma/disabled.json', disabledUsersData, 'utf8');
-        fs.writeFileSync('prisma/disabled-permissions.json', disabledUsersPermissionsData, 'utf8');
-        fs.writeFileSync('prisma/disabled-sids.json', disabledUsersSidsData, 'utf8');
-    });
-    console.log("\x1b[42m", 'Disabled users successfully imported', "\x1b[0m");
-
     connection.query('SELECT * from controlesistema.logsusuarios', (err, results) => {
         if (err) {
             console.error('Error querying MySQL:', err);
@@ -291,29 +230,110 @@ pool.getConnection((err, connection) => {
             } else {
                 console.log(`Log inválido: ${newLog.name} || ${newLog.email} || ${newLog.role} || ${newLog.admin} || ${newLog.operationType} || ${newLog.date}`)
             }
-        }
-        const newLogsData = JSON.stringify(newLogs, null, 2);
-        fs.writeFileSync('prisma/logs.json', newLogsData, 'utf8');
-    });
+            }
+            const newLogsData = JSON.stringify(newLogs, null, 2);
+            fs.writeFileSync('prisma/logs.json', newLogsData, 'utf8');
+        });
 
-    const usersData = JSON.stringify(newUsers, null, 2);
-    fs.writeFileSync('prisma/users.json', usersData, 'utf8');
+        connection.query ('SELECT * FROM desativados.usuarios', (err, results) => {
+            if (err) {
+                console.error('Error querying MySQL:', err);
+                return;
+            }
 
-    
-    connection.release();
-    
-    pool.end((err) => {
-        if (err) {
-            console.error('Error closing the pool:', err);
-        } else {
-            console.log('Pool closed.');
-        }
-    });
-})
+            try {
+                
+                for (let i=0; i < results.length; i++) {
+                    const dateString = results[i].data_delete;
+                    const date = new Date(dateString);
+                    const timestamp = date.getTime();
 
-console.log('Users have been exported to users.json');
-console.log('Permissions have been exported to permissions.json');
-console.log('Sids have been exported to sids.json');
-console.log('Disableds users have been exported to disabled.json');
-console.log('Disableds users permissions have been exported to disabled-permissions.json');
+                    const newUser = {
+                        id: results[i].id,
+                        name: results[i].nome,
+                        email: results[i].email,
+                        roleId: roles.findIndex(grupo => grupo.name.includes(results[i].grupo)) + 1,
+                        departmentId: departments.findIndex(setor => setor.name.includes(results[i].setor)) + 1,
+                        deleteAt: timestamp
+                    };
+                    newDisabledUsers.push(newUser);
+                }
+            } catch (error) {
+                console.log(error)
+                console.error(results[i])
+            }
+            const newDisabledusersData = JSON.stringify(newDisabledUsers, null, 2);
+            fs.writeFileSync('prisma/disabled-users.json', newDisabledusersData, 'utf8');
+        })
+
+        connection.query ('SELECT * FROM desativados.permissoes', (err, results) => {
+            if (err) {
+                console.error('Error querying MySQL:', err);
+                return;
+            }
+
+            try {
+                for (let i=0; i < results.length; i++) {
+                    if (results[i].permissao === 1) {
+                        const newPermission = {
+                            userId: results[i].id_usuario,
+                            systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
+                            user: newDisabledUsers.find(user => user.id === results[i].id_usuario),
+                        }
+                        if (newPermission.systemId !== 0){
+                            newDisabledPermissions.push(newPermission)
+                        } else {
+                            console.log(`Sistema não encontrado: ${results[i].sistemas} || id_usuario: ${results[i].id_usuario}`)
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+                console.error(results[i])
+            }
+            
+            const newDisabledPermissoesData = JSON.stringify(newDisabledPermissions, null, 2);
+            fs.writeFileSync('prisma/disabled-permissions.json', newDisabledPermissoesData, 'utf8');
+        })
+
+        connection.query ('SELECT * FROM desativados.sid', (err, results) => {
+            if (err) {
+                console.error('Error querying MySQL:', err);
+                return;
+            }
+
+            try {
+                for (let i=0; i < results.length; i++) {
+                    const isValidSid = /^\d{2}\.\d{3}\.\d{3}-\d{1}$/.test(results[i].valorSid);
+                    if (results[i].valorSid !== null && results[i].valorSid !== '' && results[i].valorSid !== undefined && isValidSid) {
+                        const newSid = {
+                            sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
+                            userId: results[i].id_usuario,
+                            user: newDisabledUsers.find(user => user.id === results[i].id_usuario),
+                            value: results[i].valorSid
+                        }
+                        if (sids.findIndex(sid => sid.name === results[i].nomeSid) + 1 === 0) {
+                            console.log(`Sid não encontrado: ${results[i].nomeSid} || id_usuario: ${results[i].id_usuario}`)
+                        }
+                        newDisabledSids.push(newSid)
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+            
+            const newDisabledSidsData = JSON.stringify(newDisabledSids, null, 2);
+            fs.writeFileSync('prisma/disabled-sids.json', newDisabledSidsData, 'utf8');
+        })
+
+        connection.release();
+
+        pool.end((err) => {
+            if (err) {
+                console.error('Error closing the pool:', err);
+            } else {
+                console.log('Pool closed.');
+            }
+        });
+    })
 });
