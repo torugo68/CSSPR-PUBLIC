@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker/locale/pt_BR';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -10,6 +9,8 @@ const permissionsFilePath = path.join(__dirname, 'permissions.json');
 const sidsFilePath = path.join(__dirname, 'sids.json');
 const LogsFilePath = path.join(__dirname, 'logs.json');
 const DisabledFilePath = path.join(__dirname, 'disabled.json');
+const DisabledPermissionsFilePath = path.join(__dirname, 'disabled-permissions.json');
+const DisabledSidsFilePath = path.join(__dirname, 'disabled-sids.json');
 
 if (!fs.existsSync(usersFilePath)) {
   console.error(`File not found: ${usersFilePath}`);
@@ -31,12 +32,22 @@ if (!fs.existsSync(DisabledFilePath)) {
   console.error(`File not found: ${DisabledFilePath}`);
   process.exit(1);
 }
+if (!fs.existsSync(DisabledPermissionsFilePath)) {
+  console.error(`File not found: ${DisabledPermissionsFilePath}`);
+  process.exit(1);
+}
+if (!fs.existsSync(DisabledSidsFilePath)) {
+  console.error(`File not found: ${DisabledSidsFilePath}`);
+  process.exit(1);
+}
 
 const newUsers = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
 const newPermissions = JSON.parse(fs.readFileSync(permissionsFilePath, 'utf8'));
 const newSids = JSON.parse(fs.readFileSync(sidsFilePath, 'utf8'));
 const newLogs = JSON.parse(fs.readFileSync(LogsFilePath, 'utf8'));
 const newDisableds = JSON.parse(fs.readFileSync(DisabledFilePath, 'utf8'));
+const newDisabledsPermissions = JSON.parse(fs.readFileSync(DisabledPermissionsFilePath, 'utf8'));
+const newDisabledsSids = JSON.parse(fs.readFileSync(DisabledSidsFilePath, 'utf8'));
 
 async function main() {
   const operations = [
@@ -203,7 +214,7 @@ for (const item of operations) {
           console.error(`EMAIL JA EXISTE!!! ${newUsers[i].email}`);
         }
     }
-    console.log(newUsers.length);
+    console.log("Usuarios criados, total: ", newUsers.length);
   } catch (error) {
     console.error(error);
   }
@@ -222,7 +233,7 @@ for (const item of operations) {
           console.log(newPermissions[i])
         }
     }
-    console.log(newUsers.length);
+    console.log("Permissoes criadas, total: ", newPermissions.length);
   } catch (error) {
     console.error(error);
   }
@@ -260,7 +271,7 @@ for (const item of operations) {
           console.error(`ERRO NO SID!!! ${newSids[i]} || ${newSids[i].value} || ${newSids[i].userId} || ${newSids[i].userId} || ${error}`);
         }
     }
-    console.log(newUsers.length);
+    console.log("Sids criados, total: ", newSids.length);
   } catch (error) {
     console.error(error);
   }
@@ -285,7 +296,7 @@ for (const item of operations) {
           console.error(error);
         }
     }
-    console.log(newUsers.length);
+    console.log("logs criados, total: ", newLogs.length);
   } catch (error) {
     console.error(error);
   }
@@ -316,6 +327,69 @@ for (const item of operations) {
             console.error(oldUser);
           }
         } catch (error) {
+          console.error(error);
+        }
+    }
+    console.log("Desativados criados, total: ", newDisableds.length);
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    for (let i=0; i < newDisabledsPermissions.length; i++) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: newDisabledsPermissions[i].email }
+          });
+
+          if (user) {
+              if (newDisabledsPermissions[i].systemId) {
+                  await prisma.permission.create({
+                      data: {
+                          userId: user.id,
+                          systemId: newDisabledsPermissions[i].systemId,
+                      },
+                  });
+              }
+          } else {
+            console.log(`User with email ${newDisabledsPermissions[i].email} not found.`);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+    }
+    console.log(newUsers.length);
+  } catch (error) {
+    console.error(error);
+  }
+  console.log("Permissoes dos Desativados criados, total: ", newDisabledsPermissions.length);
+
+  try {
+    for (let i=0; i < newDisabledsSids.length; i++) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: newDisabledsSids[i].email }
+          });
+
+          if (user) {
+              if (newDisabledsSids[i].sidId) {
+                  await prisma.userSids.create({
+                      data: {
+                          userId: user.id,
+                          sidId: newDisabledsSids[i].sidId,
+                          value: newDisabledsSids[i].value,
+                      },
+                  });
+                  console.log("SID DESATIVADO CRIADO", user.id, newDisabledsSids[i].sidId, newDisabledsSids[i].value)
+              }
+              else {
+                console.log("SID DESATIVADO NAO CRIADO", user.id, newDisabledsSids[i].sidId, newDisabledsSids[i].value)
+              }
+          } else {
+            console.log(`User with email ${newDisabledsSids[i].email} ${newDisabledsSids[i].sidId} not found.`);
+          }
+        } catch (error) {
+          console.error("SID JA EXISTE!!!");
           console.error(error);
         }
     }

@@ -1,6 +1,14 @@
 const mysql = require('mysql2');
 const fs = require('fs');
 
+let newSids = []
+let newLogs = []
+let newUsers = []
+let newPermissions = []
+let newDisabledSids = []
+let newDisabledUsers = []
+let newDisabledPermissions = []
+
 const departments = [
     { name: 'ATJ - Assessoria Técnica do Juridica' },
     { name: 'CCP - Câmara de Conciliação de Precatórios' },
@@ -94,13 +102,6 @@ const departments = [
     { name: 'VPN' },
   ]
 
-let newUsers = []
-let newPermissions = []
-let newSids = []
-let newDisabledUsers = []
-let newLogs = []
-let newDisabledPermissions = []
-
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
@@ -134,22 +135,25 @@ pool.getConnection((err, connection) => {
                 id: results[i].id,
                 name: results[i].nome,
                 email: results[i].email,
-                roleId: roles.findIndex(role => role.name === results[i].grupo) + 1,
-                departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
+                roleId: roles.findIndex(grupo => grupo.name.includes(results[i].grupo)) + 1,
+                departmentId: departments.findIndex(setor => setor.name.includes(results[i].setor)) + 1,
                 createAt: timestamp 
-        };  
+            };  
 
-        if (roles.findIndex(role => role.name === results[i].grupo) + 1 === 0) {
+        if (roles.findIndex(grupo => grupo.name.includes(results[i].grupo)) + 1 === 0) {
             console.log(`Grupo não encontrado: ${results[i].grupo} || id: ${results[i].id}`)
         }
-        if (departments.findIndex(setor => setor.name === results[i].setor) + 1 === 0) {
+        if (departments.findIndex(setor => setor.name.includes(results[i].setor)) + 1 === 0) {
             console.log(`Setor não encontrado: ${results[i].setor} || id: ${results[i].id}`)
         }
 
         if (newUser.roleId !== 0 && newUser.departmentId !== 0) {
             newUsers.push(newUser);
+        } else {
+            console.log(`Usuário inv válido: ${newUser.name} || ${newUser.email} || ${newUser.roleId} || ${newUser.departmentId}`)
         }
     }
+    console.log("\x1b[42m", 'Users successfully imported', "\x1b[0m");
 
     connection.query ('SELECT * FROM controlesistema.permissoes', (err, results) => {
         if (err) {
@@ -173,6 +177,7 @@ pool.getConnection((err, connection) => {
         const permissionsData = JSON.stringify(newPermissions, null, 2);
         fs.writeFileSync('prisma/permissions.json', permissionsData, 'utf8');
     })
+    console.log("\x1b[42m", 'Users permissions successfully imported', "\x1b[0m");
 
     connection.query ('SELECT * FROM controlesistema.sid', (err, results) => {
         if (err) {
@@ -196,6 +201,7 @@ pool.getConnection((err, connection) => {
         const sidData = JSON.stringify(newSids, null, 2);
         fs.writeFileSync('prisma/sids.json', sidData, 'utf8');
     })
+    console.log("\x1b[42m", 'Users sids successfully imported', "\x1b[0m");
 
     connection.query('SELECT * from controlesistema.desativados', (err, results) => {
         if (err) {
@@ -211,17 +217,39 @@ pool.getConnection((err, connection) => {
             const newUser = {
                 name: results[i].nome,
                 email: results[i].email,
-                roleId: roles.findIndex(role => role.name === results[i].grupo) + 1,
-                departmentId: departments.findIndex(setor => setor.name === results[i].setor) + 1,
+                roleId: roles.findIndex(grupo => grupo.name.includes(results[i].grupo)) + 1,
+                departmentId: departments.findIndex(setor => setor.name.includes(results[i].setor)) + 1,
                 deleteAt: timestamp 
             };
 
-            if (results[i].permissao === 1) {
+            if (results[i].permissao === 1 || results[i].permissao === '1') {
                 const newPermission = {
-                    userId: results[i].id_usuario,
-                    systemId: systems.findIndex(system => system.name === results[i].sistemas) + 1,
+                    email: results[i].email,
+                    systemId: systems.findIndex(system => system.name === results[i].sistema) + 1,
                 }
-                newDisabledPermissions.push(newPermission)
+                if (systems.findIndex(system => system.name === results[i].sistema) + 1 !== 0){
+                    if (newDisabledPermissions.findIndex(permission => 
+                        permission.email === newPermission.email && 
+                        permission.systemId === newPermission.systemId
+                    ) === -1) {
+                        newDisabledPermissions.push(newPermission);
+                    }
+                }
+            }
+
+            if (results[i].valorSid !== null && results[i].valorSid !== 'Nulo' && results[i].valorSid !== '' && results[i].valorSid !== undefined) {
+                const newSid = {
+                    email: results[i].email,
+                    value: results[i].valorSid,
+                    sidId: sids.findIndex(sid => sid.name === results[i].nomeSid) + 1,
+                }
+                if (newDisabledSids.findIndex(sid => 
+                    sid.value === newSid.value && 
+                    sid.email === newSid.email &&
+                    sid.sidId === newSid.sidId
+                ) === -1) {
+                    newDisabledSids.push(newSid);
+                }
             }
 
             if (!newDisabledUsers.some(user => user.email === newUser.email)) {
@@ -232,9 +260,12 @@ pool.getConnection((err, connection) => {
         }
         const disabledUsersData = JSON.stringify(newDisabledUsers, null, 2);
         const disabledUsersPermissionsData = JSON.stringify(newDisabledPermissions, null, 2);
+        const disabledUsersSidsData = JSON.stringify(newDisabledSids, null, 2);
         fs.writeFileSync('prisma/disabled.json', disabledUsersData, 'utf8');
         fs.writeFileSync('prisma/disabled-permissions.json', disabledUsersPermissionsData, 'utf8');
+        fs.writeFileSync('prisma/disabled-sids.json', disabledUsersSidsData, 'utf8');
     });
+    console.log("\x1b[42m", 'Disabled users successfully imported', "\x1b[0m");
 
     connection.query('SELECT * from controlesistema.logsusuarios', (err, results) => {
         if (err) {
@@ -283,6 +314,6 @@ pool.getConnection((err, connection) => {
 console.log('Users have been exported to users.json');
 console.log('Permissions have been exported to permissions.json');
 console.log('Sids have been exported to sids.json');
-console.log('Disableds have been exported to disabled.json');
-
+console.log('Disableds users have been exported to disabled.json');
+console.log('Disableds users permissions have been exported to disabled-permissions.json');
 });
