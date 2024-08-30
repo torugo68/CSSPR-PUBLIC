@@ -127,13 +127,11 @@ export const remove = async (req: Request, res: Response) => {
 
 export const restore = async (req: Request, res: Response) => {
     try {
-        console.log("TETTETSTETTS")
-        console.log(req.query.userId);
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: { id: Number(req.query.userId) },
             data: { deletedAt: null }
         });
-        res.status(200).json({ message: "User restored successfully." });
+        res.status(200).json(user);
     } catch (e) {
         res.status(500).json({ message: "Error on restoring user. Check if another account is already registered." });
     }
@@ -245,7 +243,7 @@ export const findAll = async (req: Request, res: Response) => {
                 roleIds.length > 0 ? { roleId: { in: roleIds } } : {},
                 departmentIds.length > 0 ? { departmentId: { in: departmentIds } } : {},
                 systemIds.length > 0 ? { permissions: { some: { systemId: { in: systemIds } } } } : {},
-                disableBoolean ? { deletedAt: { not: null } } : { deletedAt: null }
+                disableBoolean ? { deletedAt: { not: null } } : { deletedAt: null },
             ]
         }
         

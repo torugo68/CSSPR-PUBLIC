@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';;
+import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import session from "express-session";
 import createError from 'http-errors';
@@ -9,11 +10,19 @@ import logger from 'morgan';
 import path from 'path';
 import cors from 'cors';
 
-import { initPassport, isAuthenticated } from "./middleware/passport";
+import { initPassport } from "./middleware/passport";
 import logAcess from "./middleware/logUserActions";
 import api from './routes/api';
 
-const app = express();
+const app: Express = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
+app.use(limiter);
 
 const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3000'];
 

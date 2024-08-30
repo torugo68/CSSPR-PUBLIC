@@ -120,6 +120,13 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
             const userId = Number(body.userId);
             log(adminId, userId, 5);
           }
+        } else if (res.statusCode === 200 && req.method === 'PATCH') {
+          if (req.originalUrl === '/api/user/') {
+            const adminId = Number(req.user);
+            const userId = Number(body.user);
+            console.log('User restored');
+            log(adminId, userId, 10);
+          }
         }
       } catch (error) {
         console.error('Error logging:', error);
