@@ -16,13 +16,11 @@ import api from './routes/api';
 
 const app: Express = express();
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   message: 'Too many requests from this IP, please try again after 15 minutes'
+// });
 
 const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3000'];
 

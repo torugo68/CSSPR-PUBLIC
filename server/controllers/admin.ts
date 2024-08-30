@@ -131,3 +131,28 @@ export const findAll = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Error on find admins." });
     }
 };
+
+export const check = async (req: Request, res: Response) => {
+    try {
+        const adminId = parseInt(req.params.id, 10);
+
+        if (isNaN(adminId)) {
+            res.status(400).send('Invalid admin ID');
+            return;
+        }
+
+        const check = await prisma.logs.findFirst({
+            where: {
+                adminId: adminId
+            }
+        });
+
+        if (check) {
+            res.status(501).json({ message: "Cannot delete department." });
+        } else {
+            res.status(200).json({ message: "Department can be deleted." });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error on check." });
+    }
+};

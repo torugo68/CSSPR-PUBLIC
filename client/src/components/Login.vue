@@ -12,7 +12,9 @@
         Usuário
       </div>
       <v-text-field v-model="username" density="compact" placeholder="Usuário" prepend-inner-icon="mdi-account-outline"
-        variant="outlined">
+        variant="outlined"
+        @keydown.enter="sendData"
+        >
       </v-text-field>
       
       <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
@@ -20,7 +22,9 @@
       </div>
       <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'" :type="visible ? 'text' : 'password'"
         density="compact" placeholder="Senha" prepend-inner-icon="mdi-lock-outline" variant="outlined"
-        @click:append-inner="visible = !visible">
+        @click:append-inner="visible = !visible"
+        @keydown.enter="sendData"
+        >
       </v-text-field>
       <!--
       <a class="text-caption text-decoration-none text-blue" href="#" rel="noopener noreferrer" target="_blank">
@@ -45,8 +49,8 @@
   export default {
     data: () => ({
       visible: false,
-      username: 'admin',
-      password: 'admin',
+      username: '',
+      password: '',
       loading: false
     }),
     methods: {

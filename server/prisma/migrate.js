@@ -4,10 +4,21 @@ const fs = require('fs');
 let newSids = []
 let newLogs = []
 let newUsers = []
+let newAdmins = []
 let newPermissions = []
 let newDisabledSids = []
 let newDisabledUsers = []
 let newDisabledPermissions = []
+
+function decrypt(encryptedPassword) {
+    let decryptedPassword = '';
+    for (let i = 0; i < encryptedPassword.length; i++) {
+        let char = encryptedPassword[i];
+        let decryptedChar = String.fromCharCode(char.charCodeAt(0) - 3);
+        decryptedPassword += decryptedChar;
+    }
+    return decryptedPassword;
+}
 
 const departments = [
     { name: 'ATJ - Assessoria Técnica do Juridica' },
@@ -324,6 +335,26 @@ pool.getConnection((err, connection) => {
             
             const newDisabledSidsData = JSON.stringify(newDisabledSids, null, 2);
             fs.writeFileSync('prisma/disabled-sids.json', newDisabledSidsData, 'utf8');
+        })
+
+        connection.query('SELECT * from controlesistema.admin', (err, results) => {
+            if (err) {
+                console.error('Error querying MySQL:', err);
+                return;
+            }
+
+            for (let i = 0; i < results.length; i++) {
+                if (results[i].usuario && results[i].senha) {
+                    const newAdmin = {
+                        username: results[i].usuario,
+                        password: decrypt(results[i].senha)
+                    };
+                    newAdmins.push(newAdmin);
+                }
+            }
+            const newAdminData = JSON.stringify(newAdmins, null, 2);
+            fs.writeFileSync('prisma/admins.json', newAdminData, 'utf8');
+            console.log("\x1b[42m", 'Admins successfully imported', "\x1b[0m");
         })
 
         connection.release();

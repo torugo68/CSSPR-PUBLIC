@@ -65,6 +65,7 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
     (async () => {
       try {
         const userUpdateUrl = /^\/api\/user\/(\d+)$/;
+        const userRestoreUrl = /^\/api\/user\?userId=(\d+)$/;
         const userSidsUpdateUrl = /^\/api\/user-sids\/(\d+)$/;
         const userPermissionUpdateUrl = /^\/api\/permission\/(\d+)$/;
         
@@ -121,11 +122,10 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
             log(adminId, userId, 5);
           }
         } else if (res.statusCode === 200 && req.method === 'PATCH') {
-          if (req.originalUrl === '/api/user/') {
+          if (userRestoreUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
-            const userId = Number(body.user);
-            console.log('User restored');
-            log(adminId, userId, 10);
+            const userId = Number(body.id);
+            log(adminId, userId, 11);
           }
         }
       } catch (error) {

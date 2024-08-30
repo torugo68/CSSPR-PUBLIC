@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from "bcrypt";
 import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
 
 const usersFilePath = path.join(__dirname, 'users.json');
+const adminsFilePath = path.join(__dirname, 'admins.json');
 const permissionsFilePath = path.join(__dirname, 'permissions.json');
 const sidsFilePath = path.join(__dirname, 'sids.json');
 const LogsFilePath = path.join(__dirname, 'logs.json');
@@ -40,8 +42,13 @@ if (!fs.existsSync(DisabledSidsFilePath)) {
   console.error(`File not found: ${DisabledSidsFilePath}`);
   process.exit(1);
 }
+if (!fs.existsSync(adminsFilePath)) {
+  console.error(`File not found: ${adminsFilePath}`);
+  process.exit(1);
+}
 
 const newUsers = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
+const newAdmins = JSON.parse(fs.readFileSync(adminsFilePath, 'utf8'));
 const newPermissions = JSON.parse(fs.readFileSync(permissionsFilePath, 'utf8'));
 const newSids = JSON.parse(fs.readFileSync(sidsFilePath, 'utf8'));
 const newLogs = JSON.parse(fs.readFileSync(LogsFilePath, 'utf8'));
@@ -185,11 +192,6 @@ for (const item of sid) {
 }
 for (const item of systems) {
   await prisma.system.create({
-    data: item,
-  });
-}
-for (const item of admins) {
-  await prisma.admin.create({
     data: item,
   });
 }
@@ -389,6 +391,23 @@ for (const item of operations) {
           }
         } catch (error) {
           console.error("SID JA EXISTE!!!");
+          console.error(error);
+        }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+ 
+  try {
+    for (let i=0; i < newAdmins.length; i++) {
+        try {
+          const user = await prisma.admin.create({
+            data: {
+              username: newAdmins[i].username,
+              password: bcrypt.hashSync(newAdmins[i].password, 10),
+            },
+          });
+        } catch (error) {
           console.error(error);
         }
     }
