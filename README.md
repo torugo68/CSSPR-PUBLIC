@@ -60,6 +60,7 @@ $ npx prisma db push
 ```
 
 Seed database with sample data: 
+(broken without old data)
 ```sh
 $ npx ts-node prisma/seed.ts
 ```
@@ -91,7 +92,7 @@ The server will be accessible at [http://localhost:3001](http://localhost:3001) 
 ```sh
 $ npm install -g pm2
 $ npx tsc
-$ pm2 start dist/server.js --name "csspr"
+$ pm2 start dist/server.js --name "csspr-server"
 ```
 
 The server will be accessible at [http://localhost:3001](http://localhost:3001) (change port on server.ts)

@@ -3,11 +3,13 @@ generator client {
 }
 
 // mysql in production
-
+// sqlite in development
+// for example: file:./database.db
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id           Int       @id @default(autoincrement())
   email        String       @unique
