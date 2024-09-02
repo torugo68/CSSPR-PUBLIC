@@ -29,9 +29,17 @@ npm run dev
 To build your project for production, use:
 (config api url in globalState.ts )
 
+Install pm2:
 ```bash
-npm run build
-npm install -g serve
+npm install -g pm2
+```
+Run with pm2 
+```bash
+pm2 start npx -- serve -s dist
+```
+OR  (process will stop when terminal is closed)
+
+```bash
 serve -s dist
 ```
 

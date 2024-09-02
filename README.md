@@ -88,9 +88,12 @@ The server will be accessible at [http://localhost:3001](http://localhost:3001) 
 
 
 ### Serving the server in production
-
+Install pm2: 
 ```sh
 $ npm install -g pm2
+```
+Compile and run:
+```sh
 $ npx tsc
 $ pm2 start dist/server.js --name "csspr-server"
 ```
