@@ -22,6 +22,7 @@ dotenv.config();
 //   message: 'Too many requests from this IP, please try again after 15 minutes'
 // });
 
+// add others origins to the array
 const allowedOrigins = ['http://localhost/', 'http://localhost:3000', 'http://localhost:5000','http://localhost:80'];
 
 const corsOptions = {

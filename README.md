@@ -153,6 +153,46 @@ initPassport(app);
 # Client
 - ##### Check [Client](/client/README.md) README
 
+# Nginx
+
+When you run /client/ and /server/, they will listen on ports 3000 and 5000, respectively.
+If you want the client to be on localhost/ and the server to be on localhost/api/, both on port 80 (root /), you must install nginx and configure it.
+
+Config nginx: 
+> etc/nginx/sites-available/default
+
+```
+server {
+    listen 80;
+    server_name localhost;
+
+    # Serve the client application
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Proxy requests to the API
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Restart nginx: 
+```
+nginx -s reload
+```
+
 ## Credits
 
 This is a fork of [CSSPR](https://github.com/RhianFelipe/ControleSistema)
