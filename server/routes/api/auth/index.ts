@@ -12,7 +12,7 @@ router.get('/', isAuthenticated ,(req, res) => {
 });
 
 router.use('/login', login);
-router.use('/signup', signup);
+router.use('/signup', isAuthenticated, signup);
 router.use('/logout', isAuthenticated, logout);
 
 export default router;

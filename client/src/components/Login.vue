@@ -69,19 +69,23 @@
             }
           })
           .then(response => {
+            console.log(response);
             if (response.status === 200) {
               toastr.success('Login efetuado com sucesso', null, { timeOut: 500 });
               setTimeout(() => { this.$router.push('/'); }, 550);
             } 
             else {
+              console.log(response);
               this.error();
             }
           })
           .catch(error => {
+            console.log(error);
             this.error();
           });
         } 
         catch (error) {
+          console.log(error);
           this.error();
         }
         setTimeout(() =>{

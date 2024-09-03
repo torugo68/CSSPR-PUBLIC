@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
 
 import express, { Express, Request, Response, NextFunction } from 'express';;
 import rateLimit from 'express-rate-limit';
@@ -9,12 +7,14 @@ import createError from 'http-errors';
 import logger from 'morgan';
 import path from 'path';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
 import { initPassport } from "./middleware/passport";
 import logAcess from "./middleware/logUserActions";
 import api from './routes/api';
 
 const app: Express = express();
+dotenv.config();
 
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,
@@ -22,7 +22,7 @@ const app: Express = express();
 //   message: 'Too many requests from this IP, please try again after 15 minutes'
 // });
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://10.38.25.67:3000'];
+const allowedOrigins = ['http://localhost/', 'http://localhost:3000', 'http://localhost:5000','http://localhost:80'];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -73,7 +73,7 @@ app.use(function(err: any, req: Request, res: Response, next: NextFunction) {
   res.status(err.status || 500);
 });
 
-const PORT = parseInt(process.env.PORT || '3001', 10);
+const PORT = parseInt(process.env.PORT || '5000', 10);
 const HOST = process.env.HOST || 'localhost';
 
 app.listen(PORT, HOST, () => {

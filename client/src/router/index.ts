@@ -3,6 +3,12 @@ import { routes } from 'vue-router/auto-routes';
 import NotFound from '../pages/error/404/index.vue';
 import { globalState } from '@/globalState';
 
+routes.forEach((route, index) => {
+  if (route.path.startsWith('/api/')) {
+    routes.splice(index, 1);
+  }
+});
+
 routes.push({
   path: '/:pathMatch(.*)*',
   name: '404',
@@ -18,6 +24,10 @@ let isAuthenticated = false;
 
 router.beforeEach(async (to, from, next) => {
   try {
+    if (to.path.includes('/api/')) {
+      next();
+      return;
+    }
     if (to.path === '/error/internal') {
       next();
       return;
