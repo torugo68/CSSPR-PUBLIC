@@ -137,11 +137,25 @@ function copyToClipboard(value) {
   const url = baseUrl;
 
   if (value) {
-    clipboardy.write(value).then(() => {
-      console.log('Copied to clipboard');
-    }).catch(err => {
-      console.error('Failed to copy', err);
-    });
+    const textToCopy = value;
+    const textarea = document.createElement("textarea");
+    textarea.value = textToCopy;
+    document.body.appendChild(textarea);
+
+    textarea.select();
+    try {
+      clipboardy.write(value).then(() => {
+        console.log('Copied to clipboard');
+      }).catch(err => {
+        console.error('Failed to copy');
+      });
+    } catch (err) {
+      try {
+        document.execCommand("copy");
+      } catch (err) {
+        console.error("Failed to copy text: ");
+      }
+    }
     window.open(url, '_blank');
   }
 }
