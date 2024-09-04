@@ -77,7 +77,7 @@
 
 <script setup> 
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import axios from '@/axiosSetup';
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';

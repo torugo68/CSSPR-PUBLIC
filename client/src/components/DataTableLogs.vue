@@ -3,11 +3,14 @@
       class="data-table"
       :headers="headers"
       :items="filteredLogs"
-      :items-per-page="50"
-      :items-per-page-options="[20, 50, 100]"
+      :items-per-page="100"
+      :items-per-page-options="[100, 250, 500]"
       v-if="!loading"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
     >
+    <template v-slot:footer>
+      <!-- Empty template to hide the pagination information -->
+    </template>
       <template v-slot:top>
         <v-toolbar
             prominent
@@ -60,13 +63,10 @@
 
 <script setup>
   import { ref, reactive, watch, onMounted, computed } from 'vue';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
   
   import { globalState } from '../globalState';
 
-  import toastr from 'toastr';
-  import 'toastr/build/toastr.min.css';
-  
   const isMounted = ref(false); 
   const loading = ref(true);
   const dialog = ref(false);

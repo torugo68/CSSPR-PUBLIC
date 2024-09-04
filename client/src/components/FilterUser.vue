@@ -164,7 +164,7 @@
 
 <script setup>
   import { ref, watch, onMounted, computed } from 'vue';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
 
   import { globalState } from '../globalState';
 

@@ -105,14 +105,17 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
           if (userUpdateUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
             const userId = Number(body.user.id);
-            log(adminId, userId, 6);
+
+            if (body.actions.nameEdited || body.actions.emailEdited) {
+              log(adminId, userId, 6);
+            }
 
             if (body.actions.roleIdEdited) {
-                log(adminId, userId, 9);
+                log(adminId, userId, 10);
             }
 
             if (body.actions.departmentIdEdited) {
-                log(adminId, userId, 10);
+                log(adminId, userId, 9);
             }
 
           } 

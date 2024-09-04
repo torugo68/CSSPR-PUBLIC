@@ -6,9 +6,8 @@
       v-if="!loading"
       :items-per-page="25"
       :items-per-page-options="[20, 50, 100]"
-      :sort-by="[{ key: 'deleteAt', order: 'desc' }]"
       style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%; max-height: 700px;"
-      itemsPerPageText="Usuários desativados por página"
+      itemsPerPageText="Usuários por página"
       :loading="loading"
       item-value="name"
     >
@@ -92,7 +91,7 @@
   </template>
 <script setup>
   import { ref, onMounted, computed, watch} from 'vue';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
 
   import toastr from 'toastr';
   import 'toastr/build/toastr.min.css';

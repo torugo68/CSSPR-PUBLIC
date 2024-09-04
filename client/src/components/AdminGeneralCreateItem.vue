@@ -57,7 +57,7 @@
 <script setup>
   import { ref } from 'vue'
   import { useField, useForm } from 'vee-validate'
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
 
   import { globalState } from '../globalState';
 

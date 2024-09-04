@@ -20,6 +20,11 @@
             inset
             vertical
           ></v-divider>
+
+          <v-chip class="ma-2" color="primary" dark>
+            Nº de usuários {{ usersData.length }}
+          </v-chip>
+
           <v-spacer></v-spacer>
           <v-dialog
             v-model="dialog"
@@ -119,7 +124,7 @@
 
 <script setup>
   import { ref, reactive, watch, onMounted, nextTick, computed } from 'vue';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
 
   import { globalState } from '../globalState';
 
@@ -289,6 +294,7 @@
       await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })
       .then(response => {
         roles.value = response.data;
+
       })
       .catch(error => {
         console.error('Error fetching roles:');

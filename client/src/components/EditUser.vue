@@ -160,7 +160,7 @@
   
   <script setup>
   import { ref, onMounted, watch } from 'vue';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
   import { useField, useForm } from 'vee-validate'
   import validator from 'validator';
   

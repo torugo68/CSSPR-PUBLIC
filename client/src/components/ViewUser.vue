@@ -37,7 +37,7 @@
             >
               <div style="display:flex">
                 <p>{{ user?.sids[index].sid?.name }}:</p>
-                <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl" @click.prevent="copyToClipboard(sid?.value)">
+                <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl" @click.prevent="copyToClipboard(sid?.value)" title="Copiar e consultar o protocolo">
                   <p>{{ sid?.value }}</p>
                 </a>
               </div>
@@ -102,7 +102,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import clipboardy from 'clipboardy';
+import axios from '@/axiosSetup';
 
 import { globalState } from '../globalState';
 import Loading from './Loading.vue';
@@ -134,11 +135,15 @@ const props = defineProps({
 
 function copyToClipboard(value) {
   const url = baseUrl;
-  navigator.clipboard.writeText(value).then(() => {
-  }).catch(err => {
-    console.error('Failed to copy');
-  });
-  window.open(url, '_blank');
+
+  if (value) {
+    clipboardy.write(value).then(() => {
+      console.log('Copied to clipboard');
+    }).catch(err => {
+      console.error('Failed to copy', err);
+    });
+    window.open(url, '_blank');
+  }
 }
 
 onMounted(async () => {

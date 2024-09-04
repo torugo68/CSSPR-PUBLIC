@@ -112,7 +112,7 @@
   import { useField, useForm } from 'vee-validate'
   import { ref, onMounted } from 'vue';
   import validator from 'validator';
-  import axios from 'axios';
+  import axios from '@/axiosSetup';
 
   import { globalState } from '../globalState';
 
