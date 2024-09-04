@@ -3,7 +3,7 @@
     <v-img class="mx-auto my-7" max-width="228"
       src="../assets/logo-escuro.jpg"></v-img>
 
-    <h4 class="mb-3 text-center">PROCURADORIA-GERAL DO ESTADO DO PARANÁ</h4>
+    <h4 class="mb-3 text-center">PROCURADORIA GERAL DO ESTADO DO PARANÁ</h4>
     <h5 class="mb-3 text-center">CONTROLE DE SISTEMAS</h5>
     
 
@@ -62,27 +62,26 @@
               password: this.password
           });
 
-          await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(response => {
+          try {
+            const response = await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+
             console.log(response);
             if (response.status === 200) {
               toastr.success('Login efetuado com sucesso', null, { timeOut: 500 });
               setTimeout(() => { this.$router.push('/'); }, 550);
-            } 
-            else {
+            } else {
               console.log(response);
               this.error();
             }
-          })
-          .catch(error => {
+          } catch (error) {
             console.log(error);
             this.error();
-          });
+          }
         } 
         catch (error) {
           console.log(error);

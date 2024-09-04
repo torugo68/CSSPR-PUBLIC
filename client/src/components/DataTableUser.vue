@@ -114,8 +114,7 @@
       :size="60"
       color="primary"
       indeterminate
-      ></v-progress-circular>
-
+    ></v-progress-circular>
     </template>
 
 <script setup>

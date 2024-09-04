@@ -10,6 +10,19 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Clear the cache
+if ('caches' in window) {
+  caches.keys().then((cacheNames) => {
+    return Promise.all(
+      cacheNames.map((cacheName) => {
+        return caches.delete(cacheName);
+      })
+    );
+  }).catch((error) => {
+    console.error('Error clearing caches:', error);
+  });
+}
+
 import { registerPlugins } from '@/plugins'
 
 // Components

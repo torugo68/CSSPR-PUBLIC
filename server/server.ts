@@ -1,5 +1,4 @@
-
-import express, { Express, Request, Response, NextFunction } from 'express';;
+import express, { Express, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import session from "express-session";
@@ -23,7 +22,21 @@ dotenv.config();
 // });
 
 // add others origins to the array
-const allowedOrigins = ['http://localhost/', 'http://localhost:3000', 'http://localhost:5000','http://localhost:80'];
+const allowedOrigins = [
+  'http://localhost',
+  'http://localhost:3000',
+  'http://localhost5000',
+  'http://localhost:80',
+  'http://csspr.pge.parana',
+  'http://csspr.pge.parana:3000',
+  'http://csspr.pge.parana:5000',
+  'http://csspr.pge.parana:80',
+  'http://csspr.pge.parana:443',
+  'https://csspr.pge.parana',
+  'https://csspr.pge.parana:3000',
+  'https://csspr.pge.parana:5000',
+  'https://csspr.pge.parana:80'
+];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -47,22 +60,24 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // passport middleware
+// INSECURE - DO NOT USE IN PRODUCTION - USE A SECURE SESSION STORE INSTEAD
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 900000 // 15 minutes
+    maxAge: 900000, // 15 minutes
+    httpOnly: true, 
+    sameSite: 'lax' 
   }
 }));
 initPassport(app);
 
-// api routes
+// API routes
 app.use('/api', api);
 
 // catch 404
 app.use(function(req: Request, res: Response, next: NextFunction) {
-  next(createError(404));
 });
 
 // error handler
