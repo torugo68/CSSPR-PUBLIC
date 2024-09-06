@@ -336,7 +336,7 @@
         });
         user.value = userInfo;
       } else {
-        toastr.warning('Por favor, insira um nome ou e-mail, ou aplique um filtro para refinar sua busca.', null, { timeOut: 1500, progressBar: true, preventDuplicates:true});
+        toastr.warning('Por favor, insira um nome ou e-mail, ou aplique um filtro para refinar sua busca.', null, { timeOut: 1500, progressBar: true, preventDuplicates:true });
       }
     } catch (error) {
       console.error("Error fetching data");

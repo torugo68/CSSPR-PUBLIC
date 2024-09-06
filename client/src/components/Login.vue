@@ -20,10 +20,10 @@
       <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
         Senha
       </div>
-      <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'" :type="visible ? 'text' : 'password'"
+      <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye' : 'mdi-eye-off'" :type="visible ? 'text' : 'password'"
         density="compact" placeholder="Senha" prepend-inner-icon="mdi-lock-outline" variant="outlined"
         @click:append-inner="visible = !visible"
-        @keydown.enter="sendData"
+        @keydown.enter="debouncedSendData"
         >
       </v-text-field>
       <!--
@@ -38,66 +38,76 @@
   </div>
 </template>
 
-<script>
-  import axios from 'axios';
+<script setup>
 
-  import { globalState } from '../globalState.ts';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+import toastr from 'toastr';
+import { ref } from 'vue';
 
-  import toastr from 'toastr';
-  import 'toastr/build/toastr.min.css';
 
-  export default {
-    data: () => ({
-      visible: false,
-      username: '',
-      password: '',
-      loading: false
-    }),
-    methods: {
-      async sendData() {
-        this.loading = true;
-        try {
-          const loginData = JSON.stringify({
-              username: this.username,
-              password: this.password
-          });
+import { globalState } from '../globalState.ts';
+import 'toastr/build/toastr.min.css';
 
-          try {
-            const response = await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
-              withCredentials: true,
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            });
+const router = useRouter();
 
-            console.log(response);
-            if (response.status === 200) {
-              toastr.success('Login efetuado com sucesso', null, { timeOut: 500 });
-              setTimeout(() => { this.$router.push('/'); }, 550);
-            } else {
-              console.log(response);
-              this.error();
-            }
-          } catch (error) {
-            console.log(error);
-            this.error();
-          }
-        } 
-        catch (error) {
-          console.log(error);
-          this.error();
-        }
-        setTimeout(() =>{
-          this.loading = false;
-        }, 1000);
-      },
-      async error() {
-        setTimeout(() => {
-          toastr.error('Usuário ou senha inválidos', null, { timeOut: 700 });
-        }, 1000);
+const username = ref('')
+const password = ref('')
+const loading = ref(false);
+const visible = ref(false);
+
+async function sendData() {
+  loading.value = true;
+  if (username.value.length > 0 && password.value.length > 0) {
+    try {
+      const loginData = {
+        username: username.value,
+        password: password.value
       }
-    }
+
+      const response = await axios.post(`${globalState.apiUrl.value}/api/auth/login`, loginData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.status === 200) {
+        toastr.success(
+          'Login efetuado com sucesso', 
+          null, 
+          { timeOut: 780, progressBar: true , preventDuplicates:true });
+        setTimeout(() => { router.push('/'); }, 800);
+      } else {
+        error();
+      }
+  } catch (e) {
+    error();
   }
+  } else {
+    error();
+  }
+}
+
+function error() {
+  setTimeout(() => {
+    toastr.error(
+      'Usuário ou senha inválidos',
+       null, 
+       { timeOut: 1000, preventDuplicates:true });
+    loading.value = false;
+  }, 1000);
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
+}
+
+const debouncedSendData = debounce(sendData, 300);
 </script>
 
 <script>

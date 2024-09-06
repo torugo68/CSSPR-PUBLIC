@@ -42,13 +42,12 @@
                 <v-icon size="45" class="mr-5" v-bind="props">mdi-account-circle</v-icon>
               </template>
 
-              <v-list>
+              <v-list max-width="200px">
                 <v-list-item
                   v-for="(item, i) in items"
                   :key="i"
                 >
                 <v-list-item-action>
-
                   <a :href="item.url" class="custom-link">
                     <v-list-item-title>
                       <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
@@ -71,6 +70,7 @@ export default {
     tab: '/',
     items: [
       { title: 'Admin', icon: 'mdi-lock', url: '/admin/' },
+      { title: 'Documentação', icon: 'mdi-file-document', url: '/documents/' },
       { title: 'Sair', icon: 'mdi-logout', url: '/logout/' },
     ],
   }),

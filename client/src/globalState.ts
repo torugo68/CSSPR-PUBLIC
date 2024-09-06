@@ -1,5 +1,5 @@
 import { ref } from 'vue';
 
 export const globalState = {
-  apiUrl: ref('http://csspr.pge.parana'),
+  apiUrl: ref('http://localhost:5000'),
 };
