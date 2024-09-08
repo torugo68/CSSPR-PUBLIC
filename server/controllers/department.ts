@@ -22,7 +22,7 @@ export const create = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on creating a new department."});
+            res.status(500).json({ message: "Error on creating a new department." });
         }
     }
 }
@@ -44,7 +44,7 @@ export const update = async (req: Request, res: Response) => {
         res.status(200).json(department);
     } catch (e) {
         if (e instanceof ZodError) {
-            res.status(400).json({message: "Invalid data" });
+            res.status(400).json({ message: "Invalid data" });
         }
         else {
             res.status(500).json({ message: "Error on update department." });

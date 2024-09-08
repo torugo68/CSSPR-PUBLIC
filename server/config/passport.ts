@@ -1,5 +1,5 @@
 import * as passportStrategy from "passport-local";
-import passport, {use} from "passport";
+import passport, { use } from "passport";
 import bcrypt from "bcrypt";
 import { Express, Request, Response, NextFunction } from "express";
 import prisma from "./db";
@@ -9,7 +9,7 @@ export function initPassport(app: Express) {
     app.use(passport.authenticate('session'));
 
     passport.use(new passportStrategy.Strategy(
-        { usernameField: "username"}, async (username, password, done) => {
+        { usernameField: "username" }, async (username, password, done) => {
             try {
                 if (!username) { done(null, false) }
 
@@ -25,7 +25,7 @@ export function initPassport(app: Express) {
                 if (user.username == username && await bcrypt.compare(password, (user.password).toString())) {
                     done(null, user);
                 } else {
-                    done(null, false, { message: "User or password incorrect"});
+                    done(null, false, { message: "User or password incorrect" });
                 }
             } catch (e) {
                 done(e);
@@ -51,8 +51,8 @@ export function initPassport(app: Express) {
 
 }
 
-export function isAuthenticated(req: Request ,res: Response, next: NextFunction): Response | void {
-    if(req.user)
+export function isAuthenticated(req: Request, res: Response, next: NextFunction): Response | void {
+    if (req.user)
         return next();
     else
         res.redirect("/");

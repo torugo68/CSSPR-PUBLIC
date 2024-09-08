@@ -13,8 +13,8 @@ export const create = async (req: Request, res: Response) => {
 
         const permission = await prisma.permission.create({
             data: {
-                userId:  validatedData.data.userId,
-                systemId:  validatedData.data.systemId,
+                userId: validatedData.data.userId,
+                systemId: validatedData.data.systemId,
             }
         });
         res.status(200).json(permission);
@@ -23,7 +23,7 @@ export const create = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on creating a new permission." });
+            res.status(500).json({ message: "Error on creating a new permission." });
         }
     }
 };
@@ -33,7 +33,7 @@ export const remove = async (req: Request, res: Response) => {
         const id = Number(req.params.id);
 
         const response = await prisma.permission.delete({
-            where : { id: id } 
+            where: { id: id }
         });
         res.status(200).json(response);
     } catch (e) {
@@ -53,9 +53,9 @@ export const findAll = async (req: Request, res: Response) => {
 export const findOne = async (req: Request, res: Response) => {
     try {
         const permissions = await prisma.permission.findMany({
-            where: { 
+            where: {
                 userId: Number(req.params.id),
-             }
+            }
         });
         res.status(200).json(permissions);
     } catch (e) {

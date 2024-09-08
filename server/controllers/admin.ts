@@ -8,7 +8,7 @@ export const create = async (req: Request, res: Response) => {
     try {
         const validatedData = adminSchema.safeParse(req.body);
         if (!validatedData.success) {
-            res.status(400).json( { message: "Invalid data" } );
+            res.status(400).json({ message: "Invalid data" });
             return;
         }
 
@@ -53,7 +53,7 @@ export const update = async (req: Request, res: Response) => {
             res.status(400).json({ message: "Invalid data" });
         }
         else {
-            res.status(500).json({message: "Error on update admin."});
+            res.status(500).json({ message: "Error on update admin." });
         }
     }
 }
@@ -61,42 +61,42 @@ export const update = async (req: Request, res: Response) => {
 export const remove = async (req: Request, res: Response) => {
     try {
         await prisma.admin.delete({
-            where: {id: Number(req.params.id)},
+            where: { id: Number(req.params.id) },
         });
-        res.status(200).json({message: "Admin deleted."});
+        res.status(200).json({ message: "Admin deleted." });
     } catch (e) {
-        res.status(500).json({message: "Error on removing admin."});
+        res.status(500).json({ message: "Error on removing admin." });
     }
 };
 
 export const restore = async (req: Request, res: Response) => {
     try {
         await prisma.admin.update({
-            where: {id: Number(req.params.id)},
+            where: { id: Number(req.params.id) },
             data: { deletedAt: null }
         });
     } catch (e) {
-        res.status(500).json({message: "Error on restoring admin."});
+        res.status(500).json({ message: "Error on restoring admin." });
     }
 }
 export const findOne = async (req: Request, res: Response) => {
     try {
         const admin = await prisma.admin.findUnique({
-            where: {id: Number(req.params.id)},
+            where: { id: Number(req.params.id) },
             select: {
                 id: true,
                 username: true
             }
         });
-        
+
         const adminWithName = {
-            id : admin?.id,
+            id: admin?.id,
             name: admin?.username
         };
 
         res.status(200).json(adminWithName);
     } catch (e) {
-        res.status(500).json({message: "Error on find admin."});
+        res.status(500).json({ message: "Error on find admin." });
     }
 }
 
@@ -122,7 +122,7 @@ export const findAll = async (req: Request, res: Response) => {
         });
 
         const adminsWithName = admins.map(admin => ({
-            id : admin.id,
+            id: admin.id,
             name: admin.username
         }));
 

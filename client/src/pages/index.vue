@@ -6,6 +6,7 @@
       <create-user v-else-if="tab === 2" />
       <filter-user v-else-if="tab === 3" />
       <DataTableLogs v-else-if="tab === 4" />
+      <loading v-else></loading>
     </v-container>
     <footer>
       <FooterBar />
@@ -14,13 +15,13 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+import { ref } from 'vue';
 
-  const tab = ref(1);
+const tab = ref(1);
 
-  function handleTabUpdate(newTab) {
-    tab.value = newTab;
-  }
+function handleTabUpdate(newTab) {
+  tab.value = newTab;
+}
 </script>
 
 <style scoped>

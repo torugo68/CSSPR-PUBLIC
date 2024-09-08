@@ -7,7 +7,7 @@ import logout from "./logout";
 
 const router = Router();
 
-router.get('/', isAuthenticated ,(req, res) => {
+router.get('/', isAuthenticated, (req, res) => {
     res.status(200).json({ message: "Authenticated" });
 });
 

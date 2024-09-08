@@ -54,8 +54,8 @@ router.beforeEach(async (to, from, next) => {
       next({ path: '/login' });
       return;
     }
-  } catch (error) { 
-    next( { path: '/error/internal' });
+  } catch (error) {
+    next({ path: '/error/internal' });
   }
 });
 

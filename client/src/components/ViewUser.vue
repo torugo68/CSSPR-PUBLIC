@@ -1,16 +1,11 @@
 <template>
-  <v-card
-    class="mx-auto"
-    min-width="450px"
-    max-width="550px"
-    style="overflow-x: auto;"
-  >
+  <v-card class="mx-auto" min-width="450px" max-width="550px" style="overflow-x: auto;">
     <v-card-title class="custom-title" style="display:flex">
       Visualizar Usuário
     </v-card-title>
     <v-container v-if="!loading">
       <v-row>
-        <v-col cols="12" >
+        <v-col cols="12">
           <v-icon left class="mb-2">mdi-account</v-icon>
           <h4 class="d-inline">Nome: {{ user?.name || 'N/A' }}</h4>
         </v-col>
@@ -30,14 +25,12 @@
       <v-row dense v-if="user?.sids?.length > 0">
         <v-col cols="12">
           <v-list>
-           <h5>Termos:</h5>  
-            <v-list-item
-              v-for="(sid, index) in user?.sids || []"
-              :key="index"
-            >
+            <h5>Termos:</h5>
+            <v-list-item v-for="(sid, index) in user?.sids || []" :key="index">
               <div style="display:flex">
                 <p>{{ user?.sids[index].sid?.name }}:</p>
-                <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl" @click.prevent="copyToClipboard(sid?.value)" title="Copiar e consultar o protocolo">
+                <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl"
+                  @click.prevent="copyToClipboard(sid?.value)" title="Copiar e consultar o protocolo">
                   <p>{{ sid?.value }}</p>
                 </a>
               </div>
@@ -52,21 +45,14 @@
           </v-col>
         </v-row>
       </div>
-      <v-data-table 
-        :headers="headers" 
-        :items="user.permissions.map(permission => {
-          const system = systems.find(system => system.id === permission.systemId);
-          if (system) {
-            return { ...system, name: `${system.name}` };
-          }
-          return undefined;
-        }).filter(system => system !== undefined) || []" 
-        class="elevation-1"
-        :hide-default-footer="true"
-        :hide-default-header="true"
-        v-if="user.permissions?.length > 0"
-        style="font-size: large"
-      >
+      <v-data-table :headers="headers" :items="user.permissions.map(permission => {
+        const system = systems.find(system => system.id === permission.systemId);
+        if (system) {
+          return { ...system, name: `${system.name}` };
+        }
+        return undefined;
+      }).filter(system => system !== undefined) || []" class="elevation-1" :hide-default-footer="true"
+        :hide-default-header="true" v-if="user.permissions?.length > 0" style="font-size: large">
         <template v-slot:item.name="{ item }">
           <span>{{ item.name }}</span>
           <span style="float: right;">Sim ✅</span>
@@ -85,18 +71,12 @@
           Desativado
         </v-chip>
       </div>
-      <v-btn
-        text="Fechar"
-        variant="text"
-        @click="emitValue"
-        append-icon="mdi-close"
-        style="float: right;"
-        class="mt-6"
-      ></v-btn>
+      <v-btn text="Fechar" variant="text" @click="emitValue" append-icon="mdi-close" style="float: right;"
+        class="mt-6"></v-btn>
     </v-container>
-  <div v-else style="height: 100px; display: flex; justify-content: center; align-items: center;">
-    <Loading />
-  </div>
+    <div v-else style="height: 100px; display: flex; justify-content: center; align-items: center;">
+      <Loading />
+    </div>
   </v-card>
 </template>
 
@@ -128,9 +108,9 @@ const baseUrl = 'https://www.eprotocolo.pr.gov.br/spiweb/consultarProtocoloDigit
 const props = defineProps({
   userId: Number,
   disable: {
-      type: Boolean,
-      default: false
-    }
+    type: Boolean,
+    default: false
+  }
 })
 
 function copyToClipboard(value) {
@@ -166,12 +146,12 @@ onMounted(async () => {
     await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}?disable=${props.disable}`, { withCredentials: true })
       .then((response) => {
         user.value = response.data;
-    })
+      })
 
     await axios.get(`${globalState.apiUrl.value}/api/system`, { withCredentials: true })
       .then((response) => {
         systems.value = response.data;
-    })
+      })
 
     setTimeout(() => {
       loading.value = false;

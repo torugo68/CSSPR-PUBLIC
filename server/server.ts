@@ -67,8 +67,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 900000, // 15 minutes
-    httpOnly: true, 
-    sameSite: 'lax' 
+    httpOnly: true,
+    sameSite: 'lax'
   }
 }));
 initPassport(app);
@@ -77,11 +77,11 @@ initPassport(app);
 app.use('/api', api);
 
 // catch 404
-app.use(function(req: Request, res: Response, next: NextFunction) {
+app.use(function (req: Request, res: Response, next: NextFunction) {
 });
 
 // error handler
-app.use(function(err: any, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
   // only error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
