@@ -21,6 +21,7 @@
             <v-list-item prepend-icon="mdi-cog" title="Sistemas" @click="changeTab(3)"></v-list-item>
             <v-list-item prepend-icon="mdi-file-document" title="Termos" @click="changeTab(4)"></v-list-item>
             <v-list-item prepend-icon="mdi-account-off" title="Desativados" @click="changeTab(5)"></v-list-item>
+            <v-list-item prepend-icon="mdi-math-log" title="Logs avançados" @click="changeTab(6)"></v-list-item>
           </v-list>
 
           <template v-slot:append>
@@ -41,6 +42,7 @@
             <admin-general-component v-if="tab === 3" :parentData="tab"></admin-general-component>
             <admin-general-component v-if="tab === 4" :parentData="tab"></admin-general-component>
             <DisabledUsers v-if="tab === 5" :parentData="tab"></DisabledUsers>
+            <AdvancedLog v-if="tab === 6" :parentData="tab"></AdvancedLog>
           </v-container>
         </v-main>
       </v-layout>
@@ -49,6 +51,7 @@
 </template>
 
 <script setup>
+import AdvancedLog from '@/components/AdvancedLog.vue';
 import DisabledUsers from '@/components/DisabledUsers.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';

@@ -31,6 +31,19 @@ export const findAll = async (req: Request, res: Response) => {
     }
 };
 
+export const advancedFindAll = async (req: Request, res: Response) => {
+    try {
+        const advancedlogs = await prisma.advancedLogs.findMany({
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+        res.status(200).json(advancedlogs);
+    } catch (e) {
+        res.status(500).json({ message: "Error on find logs." });
+    }
+};
+
 export const findOne = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {

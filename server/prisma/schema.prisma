@@ -113,6 +113,7 @@ model AdvancedLogs {
   admin   Admin?    @relation(fields: [adminId], references: [id], onUpdate: Cascade)
   adminId   Int?
   ip        String
-  extraInfo String?
+  req String?
+  params String?
   createdAt DateTime   @default(now())
 }

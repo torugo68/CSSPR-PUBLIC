@@ -13,7 +13,6 @@
     "@tato30/vue-pdf": "^1.11.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
-    "clipboardy": "^4.0.0",
     "core-js": "^3.37.1",
     "roboto-fontface": "*",
     "toastr": "^2.1.4",

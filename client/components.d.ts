@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AdminGeneralComponent: typeof import('./src/components/AdminGeneralComponent.vue')['default']
     AdminGeneralCreateItem: typeof import('./src/components/AdminGeneralCreateItem.vue')['default']
+    AdvancedLog: typeof import('./src/components/AdvancedLog.vue')['default']
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
     DataTableLogs: typeof import('./src/components/DataTableLogs.vue')['default']
     DataTableUser: typeof import('./src/components/DataTableUser.vue')['default']

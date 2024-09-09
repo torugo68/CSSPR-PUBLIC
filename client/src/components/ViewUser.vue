@@ -82,7 +82,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import clipboardy from 'clipboardy';
 import axios from '@/axiosSetup';
 
 import { globalState } from '../globalState';
@@ -113,32 +112,17 @@ const props = defineProps({
   }
 })
 
-function copyToClipboard(value) {
-  const url = baseUrl;
-
-  if (value) {
-    const textToCopy = value;
-    const textarea = document.createElement("textarea");
-    textarea.value = textToCopy;
-    document.body.appendChild(textarea);
-
-    textarea.select();
-    try {
-      clipboardy.write(value).then(() => {
-        console.log('Copied to clipboard');
-      }).catch(err => {
-        console.error('Failed to copy');
-      });
-    } catch (err) {
-      try {
-        document.execCommand("copy");
-      } catch (err) {
-        console.error("Failed to copy text: ");
-      }
-    }
-    window.open(url, '_blank');
+async function copyToClipboard(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+    console.log('Text copied to clipboard');
+  } catch (err) {
+    console.error('Failed to copy text to clipboard', err);
   }
+  
+  window.open(baseUrl, '_blank');
 }
+    
 
 onMounted(async () => {
   loading.value = true;

@@ -158,8 +158,9 @@ const submit = handleSubmit(async values => {
             ...(allowEditPassword.value && { password: values.password }),
           },
           { withCredentials: true });
+      } else {
+        await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
       }
-      await axios.put(`${fetch}/${props.id}`, { name: values.name }, { withCredentials: true });
       toastr.success(`${currentName} editado com sucesso!`, null, { timeOut: 470 });
     } else {
       if (currentName === 'Admin') {
