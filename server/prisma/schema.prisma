@@ -35,6 +35,7 @@ model Admin {
   userId    Int?
   allow Boolean @default(false)
   Logs Logs[]
+  AdvancedLogs AdvancedLogs[]
   deletedAt DateTime?
 }
 
@@ -102,5 +103,16 @@ model Logs {
   userId    Int?
   operationType OperationsTypes? @relation(fields: [operationId], references: [id], onUpdate: Cascade)
   operationId Int?
+  createdAt DateTime   @default(now())
+}
+
+model AdvancedLogs {
+  id        Int       @id @default(autoincrement())
+  operation String
+  name      String
+  admin   Admin?    @relation(fields: [adminId], references: [id], onUpdate: Cascade)
+  adminId   Int?
+  ip        String
+  extraInfo String?
   createdAt DateTime   @default(now())
 }

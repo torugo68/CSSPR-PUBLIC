@@ -11,56 +11,99 @@ const logger = winston.createLogger({
   ]
 });
 
-async function log(adminId:any, userId:any, operation:any) {
-    try {
+function getRequestInfo(req: Request): string {
+  const ip = req.ip;
+  const method = req.method;
+  const url = req.url;
+
+  const body = { ...req.body };
+  if (body.password) {
+    delete body.password;
+  }
+
+  const userAgent = req.headers['user-agent'] || '';
+
+  return `
+    IP: ${ip}
+    Method: ${method}
+    URL: ${url}
+    Body: ${JSON.stringify(body, null, 2)}
+    Query: ${JSON.stringify(req.query, null, 2)}
+    Params: ${JSON.stringify(req.params, null, 2)}
+    User-Agent: ${userAgent}
+  `;
+}
+
+async function AdvancedLog(adminId: any, operation: any, req: Request) {
+  const admin = await prisma.admin.findUnique({
+    where: {
+      id: Number(adminId)
+    }
+  });
+  
+  if (admin && req.ip) {
+    await prisma.advancedLogs.create({
+      data: {
+        name: admin.username,
+        operation: operation,
+        adminId: adminId,
+        ip: req.ip,
+        extraInfo: getRequestInfo(req)
+      }
+    });
+  }
+}
+
+async function log(adminId: any, userId: any, operation: any) {
+  try {
     const user = await prisma.user.findUnique({
-        where: {
-            id: Number(userId)
+      where: {
+        id: Number(userId)
+      },
+      include: {
+        role: {
+          select: {
+            name: true
+          }
         },
-        include: {
-            role: {
-                select: {
-                    name: true
-                }
-            },
-        }
+      }
     });
     const admin = await prisma.admin.findUnique({
-        where: {
-            id: Number(adminId)
-        }
+      where: {
+        id: Number(adminId)
+      }
     });
     const operationName = await prisma.operationsTypes.findUnique({
-        where: {
-            id: Number(operation)
-        }
+      where: {
+        id: Number(operation)
+      }
     });
-        if (user && admin && operationName && user.role) {
-            await prisma.logs.create({
-                data: {
-                    name: user.name,
-                    email: user.email,
-                    role: user.role.name,
-                    operation: operationName.name,
-                    operationId: operation,
-                    adminName: admin.username,
-                    adminId: adminId,
-                    userId: userId,
-                }
-            });
-        } else {
-            console.error('Error logging:', 'User, Admin or Operation not found');
-            console.error(adminId, userId, operation);
-            console.error(user, admin, operationName);
+    if (user && admin && operationName && user.role) {
+      await prisma.logs.create({
+        data: {
+          name: user.name,
+          email: user.email,
+          role: user.role.name,
+          operation: operationName.name,
+          operationId: operation,
+          adminName: admin.username,
+          adminId: adminId,
+          userId: userId,
         }
-    } catch (error) {
-        console.error('Error logging:', error);
+      });
+    } else {
+      console.error('Error logging:', 'User, Admin or Operation not found');
+      console.error(adminId, userId, operation);
+      console.error(user, admin, operationName);
     }
+  } catch (error) {
+    console.error('Error logging:', error);
+  }
 }
 
 function logAccess(req: Request, res: Response, next: NextFunction): void {
   const originalResJson = res.json;
-  
+
   res.json = function (body: any) {
     (async () => {
       try {
@@ -68,26 +111,30 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
         const userRestoreUrl = /^\/api\/user\?userId=(\d+)$/;
         const userSidsUpdateUrl = /^\/api\/user-sids\/(\d+)$/;
         const userPermissionUpdateUrl = /^\/api\/permission\/(\d+)$/;
-        
+
         if (res.statusCode === 200 && req.method === 'POST') {
           if (req.originalUrl === '/api/user') {
             const adminId = Number(req.user);
             const userId = Number(body.id);
             log(adminId, userId, 1);
           }
-          
+
           if (req.originalUrl === '/api/user-sids') {
             const adminId = Number(req.user);
             const userId = Number(body.userId);
             log(adminId, userId, 3);
           }
-          
+
           if (req.originalUrl === '/api/permission') {
             const adminId = Number(req.user);
             const userId = Number(body.userId);
             log(adminId, userId, 4);
           }
-          
+
+          // admin
+          if (req.originalUrl === '/api/auth/signup') {
+            AdvancedLog(req.user, 'Criou novo administrador', req);
+          }
         } else if (res.statusCode === 200 && req.method === 'DELETE') {
           if (userUpdateUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
@@ -111,14 +158,14 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
             }
 
             if (body.actions.roleIdEdited) {
-                log(adminId, userId, 10);
+              log(adminId, userId, 10);
             }
 
             if (body.actions.departmentIdEdited) {
-                log(adminId, userId, 9);
+              log(adminId, userId, 9);
             }
 
-          } 
+          }
           if (userSidsUpdateUrl.test(req.originalUrl)) {
             const adminId = Number(req.user);
             const userId = Number(body.userId);

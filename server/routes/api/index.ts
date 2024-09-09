@@ -14,15 +14,15 @@ import permission from './permission';
 
 const router = Router();
 
-router.use('/admin', isAuthenticated, admin);
+router.use('/sid', isAuthenticated, sid);
 router.use('/user', isAuthenticated, user);
 router.use('/role', isAuthenticated, role);
-router.use('/department', isAuthenticated, department);
-router.use('/sid', isAuthenticated, sid);
-router.use('/user-sids', isAuthenticated, sids);
-router.use('/system', isAuthenticated, system);
-router.use('/permission', isAuthenticated, permission);
+router.use('/admin', isAuthenticated, admin);
 router.use('/logs', isAuthenticated, logs);
+router.use('/system', isAuthenticated, system);
+router.use('/user-sids', isAuthenticated, sids);
+router.use('/permission', isAuthenticated, permission);
+router.use('/department', isAuthenticated, department);
 
 
 router.use('/auth', auth);
