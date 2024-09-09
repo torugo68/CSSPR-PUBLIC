@@ -52,7 +52,6 @@ const headers = [
         key: 'name',
     },
     { title: 'Operação', key: 'operation' },
-    { title: 'Operação', key: 'operation' },
     { title: 'Data', key: 'createAt' },
 ]
 
