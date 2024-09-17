@@ -1,3 +1,8 @@
+// This script is just to convert old_data.json and add to the new database and do some checks
+// Used only with the old data, being useless without it
+// No review was done!
+// BROKEN!!!
+
 const mysql = require('mysql2');
 const fs = require('fs');
 
