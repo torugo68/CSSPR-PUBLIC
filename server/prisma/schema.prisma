@@ -7,48 +7,51 @@ generator client {
 // for example: file:./database.db
 datasource db {
   provider = "sqlite"
-  url      =  "file:./database.db"
+  url      = "file:./database.db"
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String       @unique
-  name         String
-  department    Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade)
-  role         Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade)
-  departmentId Int?
-  roleId       Int?
-  permissions  Permission[]
-  sids         UserSids[]
-  Admin        Admin[]
-  Logs         Logs[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
+  id              Int          @id @default(autoincrement())
+  email           String       @unique
+  name            String
+  department      Department?  @relation(fields: [departmentId], references: [id], onUpdate: Cascade)
+  role            Role?        @relation(fields: [roleId], references: [id], onUpdate: Cascade)
+  departmentId    Int?
+  roleId          Int?
+  homeOffice      Boolean?     @default(false)
+  homeOfficeStart DateTime?    
+  homeOfficeEnd   DateTime?    
+  permissions     Permission[]
+  sids            UserSids[]
+  Admin           Admin[]
+  Logs            Logs[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
 }
 
 model Admin {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
-  password  String
-  user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  userId    Int?
-  allow Boolean @default(false)
-  Logs Logs[]
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  password     String
+  user         User?          @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  userId       Int?
+  allow        Boolean        @default(false)
+  Logs         Logs[]
   AdvancedLogs AdvancedLogs[]
-  deletedAt DateTime?
+  deletedAt    DateTime?
 }
 
 model Role {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  users      User[]
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
 }
 
 model Department {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  users      User[]
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
 }
 
 model System {
@@ -58,9 +61,9 @@ model System {
 }
 
 model Permission {
-  id       Int     @id @default(autoincrement())
-  User     User?   @relation(fields: [userId], references: [id])
-  System   System  @relation(fields: [systemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id       Int    @id @default(autoincrement())
+  User     User?  @relation(fields: [userId], references: [id])
+  System   System @relation(fields: [systemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   userId   Int
   systemId Int
 
@@ -68,52 +71,52 @@ model Permission {
 }
 
 model Sid {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  sids     UserSids[]  
+  id   Int        @id @default(autoincrement())
+  name String     @unique
+  sids UserSids[]
 }
 
 model UserSids {
-  id        Int       @id @default(autoincrement())
-  sid       Sid      @relation(fields: [sidId], references: [id], onUpdate: Cascade)
-  sidId     Int
-  user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
-  userId    Int
-  value     String
+  id     Int    @id @default(autoincrement())
+  sid    Sid    @relation(fields: [sidId], references: [id], onUpdate: Cascade)
+  sidId  Int
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  userId Int
+  value  String
 
   @@unique([sidId, userId])
 }
 
 model OperationsTypes {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
   Logs Logs[]
 }
 
 model Logs {
-  id        Int       @id @default(autoincrement())
-  operation String
-  name      String
-  email     String
-  role String
+  id            Int              @id @default(autoincrement())
+  operation     String
+  name          String
+  email         String
+  role          String
   adminName     String
-  admin   Admin?    @relation(fields: [adminId], references: [id], onUpdate: Cascade)
-  adminId   Int?
-  user      User?     @relation(fields: [userId], references: [id], onUpdate: Cascade)
-  userId    Int?
+  admin         Admin?           @relation(fields: [adminId], references: [id], onUpdate: Cascade)
+  adminId       Int?
+  user          User?            @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  userId        Int?
   operationType OperationsTypes? @relation(fields: [operationId], references: [id], onUpdate: Cascade)
-  operationId Int?
-  createdAt DateTime   @default(now())
+  operationId   Int?
+  createdAt     DateTime         @default(now())
 }
 
 model AdvancedLogs {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   operation String
   name      String
-  admin   Admin?    @relation(fields: [adminId], references: [id], onUpdate: Cascade)
+  admin     Admin?   @relation(fields: [adminId], references: [id], onUpdate: Cascade)
   adminId   Int?
   ip        String
-  req String?
-  params String?
-  createdAt DateTime   @default(now())
+  req       String?
+  params    String?
+  createdAt DateTime @default(now())
 }

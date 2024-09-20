@@ -39,7 +39,7 @@ export const create = async (req: Request, res: Response) => {
                 })
             });
         }
-          
+
         res.status(200).json(user);
     } catch (e) {
         if (e instanceof ZodError) {
@@ -53,27 +53,64 @@ export const create = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
     try {
+        const { homeOffice, homeOfficeStart, homeOfficeEnd } = req.body;
+
+        const start = new Date(homeOfficeStart);
+        const end = new Date(homeOfficeEnd);
         const validatedData = userUpdateSchema.safeParse(req.body);
+
         if (!validatedData.success) {
             res.status(400).json({ message: "Invalid data", errors: validatedData.error.format() });
             return;
         }
 
-        const userData = {
+        let userData = {
             ...(validatedData.data.name ? { name: validatedData.data.name } : {}),
             ...(validatedData.data.email ? { email: validatedData.data.email } : {}),
             ...(validatedData.data.roleId ? { roleId: validatedData.data.roleId } : {}),
             ...(validatedData.data.departmentId ? { departmentId: validatedData.data.departmentId } : {}),
         };
+        let homeOfficeData = {}
 
+        if (homeOffice === true) {
+            if (start instanceof Date && !isNaN(start.getTime()) && end instanceof Date && !isNaN(end.getTime())) {
+                if (end > start) {
+                    homeOfficeData = {
+                        homeOffice: homeOffice,
+                        homeOfficeStart: start.toISOString(),
+                        homeOfficeEnd: end.toISOString(),
+                    };
+                }
+            }
+        } else if (homeOffice === false) {
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: Number(req.params.id),
+                },
+            });
+
+            if (user) {
+                if (user.homeOffice === true) {
+                    homeOfficeData = {
+                        homeOffice: false,
+                        homeOfficeStart: null,
+                        homeOfficeEnd: null,
+                    };
+                }
+            }
+        }
+        
         let user = await prisma.user.update({
             where: { id: Number(req.params.id) },
-            data: userData
+            data: {
+                ...userData,
+                ...homeOfficeData
+            }
         });
 
         let actions = {}
-        
-        if (validatedData.data.name) {
+
+        if (validatedData.data.name || req.body.homeOffice) {
             actions = {
                 ...actions,
                 nameEdited: true
@@ -100,11 +137,11 @@ export const update = async (req: Request, res: Response) => {
                 departmentIdEdited: true
             }
         }
-
-        res.status(200).json({user, actions});
+        
+        res.status(200).json({ user, actions });
     } catch (e) {
         if (e instanceof ZodError) {
-            res.status(400).json({message: "Invalid data" });
+            res.status(400).json({ message: "Invalid data" });
         }
         else {
             res.status(500).json({ message: "Error on update user." });
@@ -114,12 +151,12 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
     try {
-        
+
         const user = await prisma.user.update({
             where: { id: Number(req.params.id) },
             data: { deletedAt: new Date() }
         });
-        res.status(200).json(user); 
+        res.status(200).json(user);
     } catch (e) {
         res.status(500).json({ message: "Error on removing user." });
     }
@@ -145,7 +182,7 @@ export const findOne = async (req: Request, res: Response) => {
         const disableBoolean = disable === 'true' ? true : false;
 
         const user = await prisma.user.findUnique({
-            where: { 
+            where: {
                 id: Number(req.params.id),
                 deletedAt: disableBoolean ? { not: null } : null
             },
@@ -202,10 +239,10 @@ interface UserQuery {
 export const findAll = async (req: Request, res: Response) => {
     try {
         let { query, disable, selectedRoles, selectedDepartments, selectedSystems } = req.query;
-        
+
         let roleIds: number[] = [];
-        let departmentIds: number[] = [];
         let systemIds: number[] = [];
+        let departmentIds: number[] = [];
 
         if (selectedSystems) {
             if (!Array.isArray(selectedSystems)) {
@@ -246,20 +283,20 @@ export const findAll = async (req: Request, res: Response) => {
                 disableBoolean ? { deletedAt: { not: null } } : { deletedAt: null },
             ]
         }
-        
+
         let users = await prisma.user.findMany({
             where: databaseQuery,
             include: {
                 permissions: true,
                 role: {
                     select: {
-                        id:true,
+                        id: true,
                         name: true,
                     },
                 },
                 department: {
                     select: {
-                        id:true,
+                        id: true,
                         name: true,
                     },
                 },

@@ -98,11 +98,26 @@
                   item.sid.name }}:</p>
                 <a style="font-size: 1.05em" class="ml-2 mb-2" :href="baseUrl"
                   @click.prevent="copyToClipboard(item.value)">{{
-                  item.value }}</a>
+                    item.value }}</a>
                 <v-icon small @click="toggleActivation(index)" class="ml-1 mb-2">mdi-pencil</v-icon>
               </div>
             </div>
           </div>
+          <div class="teletrabalho-container">
+            <h5>Teletrabalho:</h5>
+            <v-switch v-model="homeOffice" color="success" hide-details inset class="mb-2"></v-switch>
+          </div>
+          <div class="d-flex me-2" style="gap: 16px;" v-if="homeOffice">
+            <v-text-field v-model="homeOfficeStart" label="Digite a data de início" type="date"
+              style="flex: 1;"></v-text-field>
+            <v-text-field v-model="homeOfficeEnd" label="Digite a data de término" type="date"
+              style="flex: 1;"></v-text-field>
+          </div>
+          <h6 v-if="isHomeOfficeDateValid() && homeOffice" class="alert">
+            A data de início deve ser menor que a de término
+          </h6>
+          {{ homeOfficeStart }}
+          {{ homeOfficeEnd }}
           <div class="button-container mt-5">
             <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
             <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check"
@@ -175,12 +190,15 @@ const { handleSubmit } = useForm({
 const name = useField('name');
 const email = useField('email');
 const role = useField('role');
+const homeOffice = ref(false);
+const homeOfficeStart = ref(null);
+const homeOfficeEnd = ref(null);
 const department = useField('department');
 const selectedSystems = useField('SelectedSystems');
 const sids = ref([])
 const baseUrl = 'https://www.eprotocolo.pr.gov.br/spiweb/consultarProtocoloDigital.do?action=pesquisar';
 
-// api
+// API
 const departments = ref([]);
 const roles = ref([]);
 const systems = ref([]);
@@ -217,6 +235,14 @@ const submit = handleSubmit(async values => {
         email: values.email
       }
     }
+    if (homeOffice.value !== oldUserData.value.homeOffice || homeOfficeStart.value !== oldUserData.value.homeOfficeStart || homeOfficeEnd.value !== oldUserData.value.homeOfficeEnd) {
+      userData = {
+        ...userData,
+        homeOffice: Boolean(homeOffice.value),
+        homeOfficeStart: homeOfficeStart.value,
+        homeOfficeEnd: homeOfficeEnd.value,
+      }
+    }
     if (oldUserData.value.roleId !== roles.value.find(role => role.name === values.role).id) {
       userData = {
         ...userData,
@@ -229,6 +255,7 @@ const submit = handleSubmit(async values => {
         departmentId: departments.value.find(department => department.name === values.department).id
       }
     }
+    console.log(userData);
     if (Object.keys(userData).length > 0) {
       await axios.put(`${globalState.apiUrl.value}/api/user/${props.userId}`, userData, {
         withCredentials: true,
@@ -304,6 +331,12 @@ const submit = handleSubmit(async values => {
   }, 350);
 });
 
+function convertDate(date) {
+  const d = new Date(date);
+  const isoString = d.toISOString();
+  return isoString.split('T')[0];
+}
+
 onMounted(async () => {
   loadingComponent.value = true;
   try {
@@ -339,11 +372,17 @@ onMounted(async () => {
 
     await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}`, { withCredentials: true })
       .then(response => {
+        if (response.data.homeOfficeStart || response.data.homeOfficeEnd) {
+          homeOfficeStart.value = convertDate(response.data.homeOfficeStart);
+          homeOfficeEnd.value = convertDate(response.data.homeOfficeEnd);
+        }
+
         oldUserData.value = response.data;
-        name.value.value = response.data.name
-        email.value.value = response.data.email
-        role.value.value = roles.value.find(role => role.id === response.data.roleId).name
-        department.value.value = departments.value.find(department => department.id === response.data.departmentId).name
+        name.value.value = response.data.name;
+        email.value.value = response.data.email;
+        homeOffice.value = response.data.homeOffice;
+        role.value.value = roles.value.find(role => role.id === response.data.roleId).name;
+        department.value.value = departments.value.find(department => department.id === response.data.departmentId).name;
         selectedSystems.value.value = [''].concat(
           response.data.permissions.map(permission =>
             systems.value.find(system => system.id === permission.systemId).name
@@ -423,11 +462,26 @@ function toggleActivation(index) {
   sids.value[index].activated = !sids.value[index].activated;
 }
 
+function isHomeOfficeDateValid() {
+  if (homeOfficeStart.value && homeOfficeEnd.value) {
+    return homeOfficeStart.value > homeOfficeEnd.value;
+  }
+  return true;
+}
+
 function Editing() {
   if (editName.value || editEmail.value || sids.value.some(item => item.activated)) {
     return true;
   } else {
-    return false;
+    if (homeOffice.value) {
+      if (isHomeOfficeDateValid()) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 }
 
@@ -468,5 +522,23 @@ function addNewSid() {
 
 .custom-text-field {
   width: 99%;
+}
+
+.teletrabalho-container {
+  display: flex;
+  align-items: center;
+}
+
+.teletrabalho-container h5 {
+  margin-right: 10px;
+}
+
+.alert {
+  color: red;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
 }
 </style>
