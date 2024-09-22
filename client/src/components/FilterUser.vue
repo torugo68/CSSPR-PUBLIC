@@ -1,8 +1,8 @@
 <template>
   <v-data-table class="data-table" :headers="headers" :items="user" :sort-by="[{ key: 'date', order: 'desc' }]"
-    :items-per-page="50" itemsPerPageText="Usuários por página"
-    style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
-    no-data-text="Digite um nome ou email para filtrar" show-footer>
+                :items-per-page="50" itemsPerPageText="Usuários por página"
+                style="font-size: 1em; overflow-y: auto; max-width: 1500px; min-width: 80%; width: 100%;"
+                no-data-text="Digite um nome ou email para filtrar" show-footer>
     <template v-slot:top>
       <v-toolbar prominent color="blue-lighten-5">
         <v-toolbar-title>Filtrar Usuários</v-toolbar-title>
@@ -22,7 +22,7 @@
             </v-card-title>
             <v-card-text>
               <v-select v-model="selectedRoles" :items="roles.map(role => role.name).sort()" label="Filtrar por Grupo"
-                multiple dense hide-details class="me-2">
+                        multiple dense hide-details class="me-2">
                 <template #selection="{ item, index }">
                   <v-chip v-if="index < 3" small>
                     {{ item.title }}
@@ -35,15 +35,15 @@
             </v-card-text>
             <v-card-text>
               <v-select v-model="selectedDepartments" :items="departments.map(department => department.name).sort()"
-                label="Filtrar por Setores" multiple dense hide-details class="me-2">
+                        label="Filtrar por Setores" multiple dense hide-details class="me-2">
                 <template v-slot:prepend-item>
                   <v-checkbox class="ml-4 text-body-2 small-checkbox" @click="toggleSelectAll" hide-details
-                    v-model="selectAll" ripple>
+                              v-model="selectAll" ripple>
                     <template v-slot:label>
                       <span class="text-body-2"> Selecionar todos </span>
                     </template>
                   </v-checkbox>
-                  <v-divider />
+                  <v-divider/>
                 </template>
                 <template #selection="{ item, index }">
                   <v-chip v-if="index < 3" small>
@@ -55,9 +55,9 @@
                 </template>
               </v-select>
             </v-card-text>
-            <v-card-text v-if="systems != null || systems != undefined">
+            <v-card-text v-if="systems != null || systems !== undefined">
               <v-select v-model="selectedSystems" :items="systems.map(sid => sid.name).sort()"
-                label="Filtrar por Sistema" multiple dense hide-details class="me-2">
+                        label="Filtrar por Sistema" multiple dense hide-details class="me-2">
                 <template #selection="{ item, index }">
                   <v-chip v-if="index < 3" small>
                     {{ item.title }}
@@ -68,6 +68,18 @@
                 </template>
               </v-select>
             </v-card-text>
+            <div class="mx-5">
+              <div class="teletrabalho-container">
+                <p>Filtrar por teletrabalho:</p>
+                <v-switch v-model="homeOffice" color="success" hide-details inset class="mb-2"></v-switch>
+              </div>
+              <div class="d-flex me-2" style="gap: 16px;" v-if="false">
+                <v-text-field v-model="homeOfficeStart" label="Data de início" type="date"
+                              style="flex: 1;"></v-text-field>
+                <v-text-field v-model="homeOfficeEnd" label="Data de término" type="date"
+                              style="flex: 1;"></v-text-field>
+              </div>
+            </div>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="primary" @click="reset">Limpar</v-btn>
@@ -76,13 +88,13 @@
           </v-card>
         </v-dialog>
         <v-text-field append-inner-icon="mdi-magnify" density="compact" label="Filtrar" variant="solo" hide-details
-          single-line v-model="query" class="me-2" :loading="searching"></v-text-field>
+                      single-line v-model="query" class="me-2" :loading="searching"></v-text-field>
         <v-btn color="primary" @click="fetchData" :disabled="searching">
           Filtrar
         </v-btn>
         <v-dialog v-if="false" v-model="dialog" max-width="500px">
         </v-dialog>
-        <v-btn :disabled="!user || user.length === 0" icon class="me-2" style="color: green;">
+        <v-btn :disabled="!user || user.length === 0" class="me-2" style="color: green;">
           <v-icon @click="exportToCSV">mdi-file-excel</v-icon>
           <v-tooltip activator="parent" location="top">Exportar para CSV</v-tooltip>
         </v-btn>
@@ -97,10 +109,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import axios from '@/axiosSetup';
 
-import { globalState } from '../globalState';
+import {globalState} from '@/globalState';
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
@@ -113,9 +125,9 @@ const headers = [
     align: 'start',
     key: 'name',
   },
-  { title: 'Email', key: 'email', sortable: false },
-  { title: 'Grupo', key: 'role', sortable: true },
-  { title: 'Setor', key: 'department', sortable: true },
+  {title: 'Email', key: 'email', sortable: false},
+  {title: 'Grupo', key: 'role', sortable: true},
+  {title: 'Setor', key: 'department', sortable: true},
   // { title: 'Ações', key: 'actions', sortable: false }, to be implemented
 ];
 const user = ref([]);
@@ -129,9 +141,12 @@ const selectedSystems = ref([]);
 const selectedDepartments = ref([]);
 
 const query = ref('');
-const searching = ref(false);
+const homeOfficeEnd = ref('')
+const homeOfficeStart = ref('')
 const filter = ref(false);
+const homeOffice = ref(false);
 const selectAll = ref(false);
+const searching = ref(false);
 
 function filterToggle() {
   filter.value = !filter.value;
@@ -141,6 +156,9 @@ function reset() {
   selectedRoles.value = [];
   selectedSystems.value = [];
   selectedDepartments.value = [];
+  homeOffice.value = false;
+  homeOfficeEnd.value = '';
+  homeOfficeStart.value = '';
 }
 
 
@@ -171,22 +189,6 @@ watch(selectedRoles, (newVal) => {
     selectAll.value = false;
   }
 });
-
-
-function formatDate(isoDate) {
-  const date = new Date(isoDate);
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-    timeZone: 'UTC'
-  }).format(date);
-}
-
 watch(dialog, (val) => {
   if (!val) close();
 });
@@ -204,7 +206,7 @@ const exportToCSV = () => {
   document.body.removeChild(link);
 };
 
-const convertToCSV = (data) => {
+function convertToCSV(data) {
   if (data.length === 0) return '';
 
   data.sort((a, b) => {
@@ -215,33 +217,44 @@ const convertToCSV = (data) => {
     return a.role.localeCompare(b.role);
   });
 
+  const hasHomeOffice = data.some(user => user.homeOffice);
+
   const headers = Object.keys(data[0])
-    .filter(key => key !== 'id')
+    .filter(key => key !== 'id' && key !== 'homeOffice' && key !== 'homeOfficeStart' && key !== 'homeOfficeEnd')
     .map(key => {
       if (key === 'name') return 'Nome';
       if (key === 'role') return 'Grupo';
       if (key === 'email') return 'Email';
       if (key === 'department') return 'Setor';
       return key;
-    })
-    .join(',');
+    });
+
+  if (hasHomeOffice) {
+    headers.push('Início', 'Término');
+  }
 
   const rows = data
     .map(user => {
-      const { id, ...rest } = user;
-      return Object.values(rest)
-        .map(value => `"${String(value).replace(/"/g, '""')}"`)
-        .join(',');
+      const { id, homeOffice, homeOfficeStart, homeOfficeEnd, ...rest } = user;
+      const values = Object.values(rest)
+        .map(value => `"${String(value).replace(/"/g, '""')}"`);
+
+      if (homeOffice) {
+        values.push(`"${homeOfficeStart || ''}"`, `"${homeOfficeEnd || ''}"`);
+      }
+
+      return values.join(',');
     })
     .join('\n');
-  return `${headers}\n${rows}`;
-};
+
+  return `${headers.join(',')}\n${rows}`;
+}
 
 async function fetchData() {
   try {
     searching.value = true;
 
-    if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0 || selectedSystems.value.length > 0) {
+    if (query.value.length > 0 || selectedDepartments.value.length > 0 || selectedRoles.value.length > 0 || selectedSystems.value.length > 0 || homeOffice.value) {
       const response = await axios.get(`${globalState.apiUrl.value}/api/user`, {
         params: {
           query: query.value,
@@ -256,24 +269,30 @@ async function fetchData() {
           selectedSystems: selectedSystems.value.map(systemName => {
             const system = systems.value.find(r => r.name === systemName);
             return system ? system.id : null;
-          }).filter(id => id !== null)
+          }).filter(id => id !== null),
+          homeOffice: homeOffice.value,
         },
         withCredentials: true
       });
 
-      const userInfo = response.data.map(user => {
+      user.value = response.data.map(user => {
         return {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role.name,
           department: user.department.name,
+          homeOffice: user.homeOffice,
+          homeOfficeStart: convertDate(user.homeOfficeStart),
+          homeOfficeEnd: convertDate(user.homeOfficeEnd),
         }
       });
-
-      user.value = userInfo;
     } else {
-      toastr.warning('Por favor, insira um nome ou e-mail, ou aplique um filtro para refinar sua busca.', null, { timeOut: 1500, progressBar: true, preventDuplicates: true });
+      toastr.warning('Por favor, insira um nome ou e-mail, ou aplique um filtro para refinar sua busca.', null, {
+        timeOut: 1500,
+        progressBar: true,
+        preventDuplicates: true
+      });
     }
   } catch (error) {
     console.error("Error fetching data");
@@ -289,11 +308,24 @@ function viewUser(item) {
   dialog.value = true;
 }
 
+function convertDate(dateString) {
+  if (!dateString) {
+    return 'N/A';
+  }
+
+  const date = dateString.substr(0, 10);
+  const day = date.substr(8, 2);
+  const month = date.substr(5, 2);
+  const year = date.substr(0, 4);
+
+  return `${day}/${month}/${year}`;
+}
+
 onMounted(async () => {
   try {
-    roles.value = (await axios.get(`${globalState.apiUrl.value}/api/role`, { withCredentials: true })).data;
-    systems.value = (await axios.get(`${globalState.apiUrl.value}/api/system`, { withCredentials: true })).data;
-    departments.value = (await axios.get(`${globalState.apiUrl.value}/api/department`, { withCredentials: true })).data;
+    roles.value = (await axios.get(`${globalState.apiUrl.value}/api/role`, {withCredentials: true})).data;
+    systems.value = (await axios.get(`${globalState.apiUrl.value}/api/system`, {withCredentials: true})).data;
+    departments.value = (await axios.get(`${globalState.apiUrl.value}/api/department`, {withCredentials: true})).data;
     loading.value = false;
   } catch (error) {
     console.error("Error fetching data");
@@ -311,5 +343,15 @@ onMounted(async () => {
 .small-checkbox {
   height: 24px;
   line-height: 24px;
+}
+
+.teletrabalho-container {
+  display: flex;
+  align-items: center;
+}
+
+.teletrabalho-container p {
+  margin-right: 10px;
+  font-size: large;
 }
 </style>

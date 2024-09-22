@@ -116,8 +116,6 @@
           <h6 v-if="isHomeOfficeDateValid() && homeOffice" class="alert">
             A data de início deve ser menor que a de término
           </h6>
-          {{ homeOfficeStart }}
-          {{ homeOfficeEnd }}
           <div class="button-container mt-5">
             <v-btn color="black-darken-1" variant="text" @click="emitValue(true)">Cancelar</v-btn>
             <v-btn color="blue-darken-3" :loading="loading" variant="text" type="submit" append-icon="mdi-check"
@@ -255,7 +253,6 @@ const submit = handleSubmit(async values => {
         departmentId: departments.value.find(department => department.name === values.department).id
       }
     }
-    console.log(userData);
     if (Object.keys(userData).length > 0) {
       await axios.put(`${globalState.apiUrl.value}/api/user/${props.userId}`, userData, {
         withCredentials: true,

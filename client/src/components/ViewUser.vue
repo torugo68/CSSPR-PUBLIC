@@ -30,7 +30,7 @@
               <div style="display:flex">
                 <p>{{ user?.sids[index].sid?.name }}:</p>
                 <a style="font-size: 1.05em; font-weight: bold;" class="ml-2" :href="baseUrl"
-                  @click.prevent="copyToClipboard(sid?.value)" title="Copiar e consultar o protocolo">
+                   @click.prevent="copyToClipboard(sid?.value)" title="Copiar e consultar o protocolo">
                   <p>{{ sid?.value }}</p>
                 </a>
               </div>
@@ -69,7 +69,7 @@
         }
         return undefined;
       }).filter(system => system !== undefined) || []" class="elevation-1 mt-2" :hide-default-footer="true"
-        :hide-default-header="true" v-if="user.permissions?.length > 0" style="font-size: large">
+                    :hide-default-header="true" v-if="user.permissions?.length > 0" style="font-size: large">
         <template v-slot:item.name="{ item }">
           <span>{{ item.name }}</span>
           <span style="float: right;">Sim ✅</span>
@@ -89,19 +89,19 @@
         </v-chip>
       </div>
       <v-btn text="Fechar" variant="text" @click="emitValue" append-icon="mdi-close" style="float: right;"
-        class="mt-6"></v-btn>
+             class="mt-6"></v-btn>
     </v-container>
     <div v-else style="height: 100px; display: flex; justify-content: center; align-items: center;">
-      <Loading />
+      <Loading/>
     </div>
   </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import axios from '@/axiosSetup';
 
-import { globalState } from '../globalState';
+import {globalState} from '../globalState';
 import Loading from './Loading.vue';
 
 const emit = defineEmits(['closed']);
@@ -116,8 +116,8 @@ const user = ref([]);
 const systems = ref([]);
 
 const headers = [
-  { text: 'Sistema', value: 'name' },
-  { text: 'Permissão', value: 'verified' }
+  {text: 'Sistema', value: 'name'},
+  {text: 'Permissão', value: 'verified'}
 ];
 const baseUrl = 'https://www.eprotocolo.pr.gov.br/spiweb/consultarProtocoloDigital.do?action=pesquisar';
 
@@ -129,11 +129,15 @@ const props = defineProps({
   }
 })
 
-function convertDate(date) {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-  const year = d.getFullYear();
+function convertDate(dateString) {
+  if (!dateString) {
+    return 'N/A';
+  }
+
+  const date = dateString.substr(0, 10);
+  const day = date.substr(8, 2);
+  const month = date.substr(5, 2);
+  const year = date.substr(0, 4);
 
   return `${day}/${month}/${year}`;
 }
@@ -143,7 +147,7 @@ async function copyToClipboard(value) {
     await navigator.clipboard.writeText(value);
     console.log('Text copied to clipboard');
   } catch (err) {
-    console.error('Failed to copy text to clipboard', err);
+    console.error('Failed to copy text to clipboard');
   }
 
   window.open(baseUrl, '_blank');
@@ -153,12 +157,12 @@ async function copyToClipboard(value) {
 onMounted(async () => {
   loading.value = true;
   try {
-    await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}?disable=${props.disable}`, { withCredentials: true })
+    await axios.get(`${globalState.apiUrl.value}/api/user/${props.userId}?disable=${props.disable}`, {withCredentials: true})
       .then((response) => {
         user.value = response.data;
       })
 
-    await axios.get(`${globalState.apiUrl.value}/api/system`, { withCredentials: true })
+    await axios.get(`${globalState.apiUrl.value}/api/system`, {withCredentials: true})
       .then((response) => {
         systems.value = response.data;
       })
