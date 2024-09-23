@@ -233,7 +233,7 @@ const submit = handleSubmit(async values => {
         email: values.email
       }
     }
-    if (homeOffice.value !== oldUserData.value.homeOffice || homeOfficeStart.value !== oldUserData.value.homeOfficeStart || homeOfficeEnd.value !== oldUserData.value.homeOfficeEnd) {
+    if (homeOffice.value !== oldUserData.value.homeOffice || homeOfficeStart.value !== convertDate(oldUserData.value.homeOfficeStart) || homeOfficeEnd.value !== convertDate(oldUserData.value.homeOfficeEnd)) {
       userData = {
         ...userData,
         homeOffice: Boolean(homeOffice.value),

@@ -22,7 +22,6 @@ async function AdvancedLog(adminId: any, operation: any, req: Request, item?: an
   });
 
   if (admin && req.ip) {
-    console.log(item)
     await prisma.advancedLogs.create({
       data: {
         name: admin.username,
@@ -209,7 +208,6 @@ function logAccess(req: Request, res: Response, next: NextFunction): void {
             if (body.actions.departmentIdEdited) {
               log(adminId, userId, 9);
             }
-
           }
 
           if (userSidsUpdateUrl.test(req.originalUrl)) {
