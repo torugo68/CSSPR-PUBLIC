@@ -4,6 +4,8 @@
 
 ![image](public/logo-branco.png)
 
+**Warning:** This is a public version. For the most up-to-date version, please submit a request to the [CSSPR repository](https://gitlab.com/victor-marques/csspr.git).
+
 ## Prerequisites
 
 This project requires NodeJS (version 8 or later) and NPM.v
